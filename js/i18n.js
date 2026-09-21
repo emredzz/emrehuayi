@@ -34,6 +34,8 @@ const I18N = (() => {
       "auth.resetSub": "Bu uygulama tamamen yerelde çalıştığı için e-posta gönderilmez. Hesabının e-postasını gir ve yeni şifreni belirle.",
       "auth.newPassword": "Yeni şifre",
       "auth.resetBtn": "Şifreyi güncelle",
+      "auth.demoTitle": "Demo hesabı",
+      "auth.demoBtn": "Demo ile gir",
 
       "nav.dashboard": "Panel",
       "nav.tasks": "Görevler",
@@ -191,6 +193,8 @@ const I18N = (() => {
       "auth.resetSub": "This app runs entirely offline, so no email is sent. Enter your account email and set a new password.",
       "auth.newPassword": "New password",
       "auth.resetBtn": "Update password",
+      "auth.demoTitle": "Demo account",
+      "auth.demoBtn": "Try the demo",
 
       "nav.dashboard": "Dashboard",
       "nav.tasks": "Tasks",

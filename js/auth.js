@@ -110,6 +110,41 @@ const Auth = (() => {
     Store.clearSession();
   }
 
+  /* ---------- Demo hesabı ----------
+     Uygulama ilk açıldığında denenecek hazır bir hesap bulunsun
+     diye oluşturulur. Zaten varsa hiçbir şey yapılmaz, yani
+     kullanıcının demo hesapta yaptığı değişiklikler korunur. */
+
+  const DEMO = { email: "qwe@gmail.com", password: "123456" };
+
+  function ensureDemoUser() {
+    if (findByEmail(DEMO.email)) return null;
+
+    const salt = Utils.randomSalt();
+    const kullanici = {
+      id: Utils.uid(),
+      fullName: "Demo Kullanıcı",
+      username: "demo",
+      email: DEMO.email,
+      salt,
+      passwordHash: Utils.hashPassword(DEMO.password, salt),
+      avatar: null,
+      createdAt: new Date().toISOString()
+    };
+
+    const liste = allUsers();
+    liste.push(kullanici);
+    if (!saveUsers(liste)) return null;
+
+    Data.seedDefaults(kullanici.id);
+    Data.seedDemoTasks(kullanici.id);
+    return kullanici;
+  }
+
+  function demoCredentials() {
+    return { ...DEMO };
+  }
+
   /* ---------- Şifre sıfırlama ----------
      Yerel uygulamada e-posta gönderilemediği için doğrulama
      adımı yok: e-posta kayıtlıysa yeni şifre doğrudan yazılır. */
@@ -186,6 +221,8 @@ const Auth = (() => {
   return {
     currentUser,
     findById,
+    ensureDemoUser,
+    demoCredentials,
     signUp,
     signIn,
     signOut,

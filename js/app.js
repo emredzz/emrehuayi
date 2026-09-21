@@ -46,6 +46,9 @@
     bindSettings();
     bindGlobalKeys();
 
+    // Denenecek hazır bir hesap bulunsun; zaten varsa dokunulmaz
+    Auth.ensureDemoUser();
+
     const kullanici = Auth.currentUser();
     if (kullanici) {
       enterApp(kullanici);
@@ -151,6 +154,19 @@
       signupForm.reset();
       enterApp(sonuc.user);
       UI.toast(I18N.t("msg.signedUp"));
+    });
+
+    /* --- Demo hesabıyla giriş ---
+       Alanları doldurup formu normal akışına sokuyoruz; böylece
+       giriş yolu tek yerde kalıyor. */
+    $("#demoLoginBtn").addEventListener("click", () => {
+      const demo = Auth.demoCredentials();
+      const el = signinForm.elements;
+      el.email.value = demo.email;
+      el.password.value = demo.password;
+      el.remember.checked = true;
+      UI.clearErrors(signinForm);
+      signinForm.requestSubmit();
     });
 
     /* --- Şifremi unuttum --- */

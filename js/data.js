@@ -256,6 +256,59 @@ const Data = (() => {
     seedDefaults(userId);
   }
 
+  /* Demo hesabı için örnek görevler.
+     Tarihler bugüne göre kaydırılır, böylece demo ne zaman
+     açılırsa açılsın "bugün" ve "gecikmiş" görevler dolu görünür. */
+  function seedDemoTasks(userId) {
+    const kategoriler = getCategories(userId);
+    const bul = (ad) => {
+      const k = kategoriler.find((c) => c.name === ad);
+      return k ? k.id : null;
+    };
+
+    const gunEkle = (fark) => {
+      const d = new Date();
+      d.setDate(d.getDate() + fark);
+      const ay = String(d.getMonth() + 1).padStart(2, "0");
+      const gun = String(d.getDate()).padStart(2, "0");
+      return `${d.getFullYear()}-${ay}-${gun}`;
+    };
+
+    const taslak = [
+      { title: "Haftalık raporu tamamla", description: "Pazartesi toplantısından önce gönderilecek.",
+        cat: "Work", priority: "high", gun: 0 },
+      { title: "Market alışverişi", description: "Kahve, süt, meyve.",
+        cat: "Shopping", priority: "low", gun: 0 },
+      { title: "Sunum taslağını hazırla", description: "",
+        cat: "Work", priority: "high", gun: -2 },
+      { title: "Toplantı notlarını takımla paylaş", description: "",
+        cat: "Work", priority: "medium", gun: 2 },
+      { title: "JavaScript modüllerini çalış", description: "import/export ve kapsam konuları.",
+        cat: "Learning", priority: "medium", gun: 5 },
+      { title: "Spor salonuna git", description: "",
+        cat: "Personal", priority: "low", gun: 1 },
+      { title: "Elektrik faturasını öde", description: "",
+        cat: "Personal", priority: "medium", gun: -1, bitti: true },
+      { title: "Kitabın ikinci bölümünü bitir", description: "",
+        cat: "Learning", priority: "low", gun: -3, bitti: true }
+    ];
+
+    const simdi = new Date().toISOString();
+    const gorevler = taslak.map((t, i) => ({
+      id: Utils.uid() + i,
+      title: t.title,
+      description: t.description,
+      categoryId: bul(t.cat),
+      priority: t.priority,
+      dueDate: gunEkle(t.gun),
+      completed: Boolean(t.bitti),
+      completedAt: t.bitti ? simdi : null,
+      createdAt: simdi
+    }));
+
+    saveTasks(userId, gorevler);
+  }
+
   return {
     PRIORITIES,
     getCategories,
@@ -274,6 +327,7 @@ const Data = (() => {
     getSettings,
     saveSettings,
     seedDefaults,
+    seedDemoTasks,
     resetData
   };
 })();

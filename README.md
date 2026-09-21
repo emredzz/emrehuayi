@@ -13,6 +13,19 @@ python -m http.server 8000
 # tarayıcıda: http://localhost:8000
 ```
 
+## Demo hesabı
+
+Uygulama ilk açıldığında denenecek hazır bir hesap oluşturulur:
+
+```
+E-posta: qwe@gmail.com
+Şifre  : 123456
+```
+
+Giriş formunun altındaki **Demo ile gir** düğmesi bu bilgileri doldurup doğrudan girer. Hesap, dört kategoriye dağılmış sekiz örnek görevle gelir — ikisi tamamlanmış, biri gecikmiş, ikisi bugüne ait. Tarihler her açılışta bugüne göre hesaplanır, yani demo ne zaman açılırsa açılsın dolu görünür.
+
+Hesap yalnızca daha önce yoksa oluşturulur; demo hesapta yaptığınız değişiklikler sayfayı yenileyince kaybolmaz.
+
 ## Özellikler
 
 **Kimlik doğrulama**
