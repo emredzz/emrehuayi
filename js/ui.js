@@ -14,8 +14,10 @@ const UI = (() => {
     el.className = `toast toast--${tur}`;
     el.setAttribute("role", "status");
 
-    const simge = { success: "✓", error: "!", info: "i" }[tur] || "i";
-    el.innerHTML = `<span class="toast__icon">${simge}</span><span>${Utils.escapeHtml(mesaj)}</span>`;
+    const simge = { success: "check", error: "alert", info: "info" }[tur] || "info";
+    el.innerHTML =
+      `<span class="toast__icon">${Icon.svg(simge)}</span>` +
+      `<span class="toast__text">${Utils.escapeHtml(mesaj)}</span>`;
     kap.appendChild(el);
 
     // Çıkış animasyonu bitince DOM'dan düşür
@@ -155,6 +157,14 @@ const UI = (() => {
 
   function bindPasswordToggles(root = document) {
     root.querySelectorAll(".pass-toggle").forEach((btn) => {
+      // Açık ve kapalı göz simgesi bir kez basılır, görünürlüğü
+      // CSS'teki .is-visible sınıfı belirler.
+      if (!btn.querySelector("svg")) {
+        btn.innerHTML =
+          Icon.svg("eye", "icon pass-toggle__on") +
+          Icon.svg("eye-off", "icon pass-toggle__off");
+      }
+
       if (btn.dataset.bound === "1") return;
       btn.dataset.bound = "1";
 

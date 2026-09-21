@@ -20,14 +20,11 @@
     }
   };
 
-  const ICONS = [
-    "📁", "💼", "🏠", "📚", "🛒", "💡", "🎯", "🏃", "🍳", "✈️",
-    "💰", "🎵", "🎨", "🔧", "❤️", "🌱", "📞", "🎓", "🐾", "⭐"
-  ];
-
+  /* Kategori simgeleri icons.js'te, renkler burada.
+     Renkler yumuşak tema için doygunluğu düşürülmüş tonlar. */
   const COLORS = [
-    "#6366f1", "#8b5cf6", "#ec4899", "#ef4444", "#f59e0b",
-    "#10b981", "#14b8a6", "#0ea5e9", "#64748b", "#84cc16"
+    "#7c81e8", "#9b8bdd", "#d98cb3", "#e08989", "#e0a458",
+    "#5fb99a", "#5fb0b3", "#6fa8d4", "#8a94a6", "#9ab569"
   ];
 
   const $ = (sel, root = document) => root.querySelector(sel);
@@ -401,7 +398,7 @@
   function emptyHTML(baslikAnahtar, altAnahtar) {
     return `
       <div class="empty">
-        <div class="empty__icon">✦</div>
+        <span class="empty__icon">${Icon.svg("inbox")}</span>
         <p>${Utils.escapeHtml(I18N.t(baslikAnahtar))}</p>
         ${altAnahtar ? `<small>${Utils.escapeHtml(I18N.t(altAnahtar))}</small>` : ""}
       </div>`;
@@ -422,14 +419,14 @@
 
     const kategoriRozeti = kategori
       ? `<span class="badge" style="--c:${Utils.escapeHtml(kategori.color)}">
-           <span>${Utils.escapeHtml(kategori.icon)}</span>${Utils.escapeHtml(kategori.name)}
+           ${Icon.svg(kategori.icon, "icon badge__icon")}${Utils.escapeHtml(kategori.name)}
          </span>`
       : "";
 
     return `
       <article class="task ${task.completed ? "is-done" : ""}" data-id="${task.id}">
         <button class="task__check" data-action="toggle" aria-label="${Utils.escapeHtml(I18N.t("msg.taskDone"))}">
-          <span>✓</span>
+          ${Icon.svg("check", "icon task__checkIcon")}
         </button>
 
         <div class="task__body">
@@ -438,13 +435,17 @@
           <div class="task__meta">
             <span class="prio prio--${task.priority}">${Utils.escapeHtml(I18N.t("prio." + task.priority))}</span>
             ${kategoriRozeti}
-            ${tarihMetni ? `<span class="due ${gecikti ? "is-overdue" : ""} ${bugunMu ? "is-today" : ""}">◔ ${Utils.escapeHtml(tarihMetni)}</span>` : ""}
+            ${tarihMetni
+              ? `<span class="due ${gecikti ? "is-overdue" : ""} ${bugunMu ? "is-today" : ""}">
+                   ${Icon.svg(gecikti ? "alert" : "clock", "icon due__icon")}${Utils.escapeHtml(tarihMetni)}
+                 </span>`
+              : ""}
           </div>
         </div>
 
         <div class="task__actions">
-          <button class="iconBtn" data-action="edit" data-i18n-title="common.edit" title="${Utils.escapeHtml(I18N.t("common.edit"))}">✎</button>
-          <button class="iconBtn iconBtn--danger" data-action="delete" title="${Utils.escapeHtml(I18N.t("common.delete"))}">🗑</button>
+          <button class="iconBtn" data-action="edit" title="${Utils.escapeHtml(I18N.t("common.edit"))}">${Icon.svg("edit")}</button>
+          <button class="iconBtn iconBtn--danger" data-action="delete" title="${Utils.escapeHtml(I18N.t("common.delete"))}">${Icon.svg("trash")}</button>
         </div>
       </article>`;
   }
@@ -505,10 +506,10 @@
             return `
               <article class="catCard" data-id="${c.id}" style="--c:${Utils.escapeHtml(c.color)}">
                 <div class="catCard__top">
-                  <span class="catCard__icon">${Utils.escapeHtml(c.icon)}</span>
+                  <span class="catCard__icon">${Icon.svg(c.icon)}</span>
                   <div class="catCard__actions">
-                    <button class="iconBtn" data-action="edit-cat" title="${Utils.escapeHtml(I18N.t("common.edit"))}">✎</button>
-                    <button class="iconBtn iconBtn--danger" data-action="delete-cat" title="${Utils.escapeHtml(I18N.t("common.delete"))}">🗑</button>
+                    <button class="iconBtn" data-action="edit-cat" title="${Utils.escapeHtml(I18N.t("common.edit"))}">${Icon.svg("edit")}</button>
+                    <button class="iconBtn iconBtn--danger" data-action="delete-cat" title="${Utils.escapeHtml(I18N.t("common.delete"))}">${Icon.svg("trash")}</button>
                   </div>
                 </div>
                 <h4>${Utils.escapeHtml(c.name)}</h4>
@@ -531,7 +532,7 @@
     filtre.innerHTML =
       `<option value="">${Utils.escapeHtml(I18N.t("cat.all"))}</option>` +
       liste
-        .map((c) => `<option value="${c.id}">${Utils.escapeHtml(c.icon + " " + c.name)}</option>`)
+        .map((c) => `<option value="${c.id}">${Utils.escapeHtml(c.name)}</option>`)
         .join("");
     filtre.value = secili;
 
@@ -540,7 +541,7 @@
     form.innerHTML =
       `<option value="">${Utils.escapeHtml(I18N.t("tasks.noCategory"))}</option>` +
       liste
-        .map((c) => `<option value="${c.id}">${Utils.escapeHtml(c.icon + " " + c.name)}</option>`)
+        .map((c) => `<option value="${c.id}">${Utils.escapeHtml(c.name)}</option>`)
         .join("");
     form.value = formSecili;
   }
@@ -647,8 +648,8 @@
   function buildPickers() {
     const iconKap = $("#iconPicker");
     if (!iconKap.dataset.built) {
-      iconKap.innerHTML = ICONS.map(
-        (i) => `<button type="button" class="iconOpt" data-icon="${i}">${i}</button>`
+      iconKap.innerHTML = Icon.CATEGORY.map(
+        (ad) => `<button type="button" class="iconOpt" data-icon="${ad}">${Icon.svg(ad)}</button>`
       ).join("");
       iconKap.dataset.built = "1";
 
@@ -685,7 +686,7 @@
     UI.clearErrors(form);
     form.reset();
 
-    const icon = category ? category.icon : ICONS[0];
+    const icon = category ? category.icon : Icon.CATEGORY[0];
     const color = category ? category.color : COLORS[0];
 
     const el = form.elements;
@@ -913,7 +914,7 @@
 
   function updateThemeButton() {
     const koyu = document.documentElement.dataset.theme === "dark";
-    $("#themeBtn").textContent = koyu ? "☀" : "☾";
+    $("#themeBtn").innerHTML = Icon.svg(koyu ? "sun" : "moon");
   }
 
   function applyLanguage(dil) {

@@ -20,19 +20,23 @@ const Data = (() => {
 
   /* Yeni hesap açıldığında hazır gelen kategoriler */
   const DEFAULT_CATEGORIES = [
-    { name: "Work", icon: "💼", color: "#6366f1" },
-    { name: "Personal", icon: "🏠", color: "#ec4899" },
-    { name: "Learning", icon: "📚", color: "#f59e0b" },
-    { name: "Shopping", icon: "🛒", color: "#10b981" }
+    { name: "Work", icon: "briefcase", color: "#7c81e8" },
+    { name: "Personal", icon: "home", color: "#d98cb3" },
+    { name: "Learning", icon: "book", color: "#e0a458" },
+    { name: "Shopping", icon: "cart", color: "#5fb99a" }
   ];
 
   const key = (userId, ad) => `u:${userId}:${ad}`;
 
   /* ---------- Kategoriler ---------- */
 
+  /* Okurken simge adı normalleştirilir. Uygulama önce emoji
+     saklıyordu; eski kayıtlar böylece kendiliğinden yeni simge
+     setine çevrilir, ayrı bir göç adımı gerekmez. */
   function getCategories(userId) {
     const liste = Store.read(key(userId, "categories"), []);
-    return Array.isArray(liste) ? liste : [];
+    if (!Array.isArray(liste)) return [];
+    return liste.map((c) => ({ ...c, icon: Icon.normalize(c.icon) }));
   }
 
   function saveCategories(userId, liste) {
@@ -51,7 +55,7 @@ const Data = (() => {
     const kategori = {
       id: Utils.uid(),
       name: temiz,
-      icon: icon || "📁",
+      icon: Icon.normalize(icon),
       color: color || "#6366f1",
       createdAt: new Date().toISOString()
     };
@@ -74,7 +78,7 @@ const Data = (() => {
     const idx = liste.findIndex((c) => c.id === id);
     if (idx === -1) return { ok: false, errors: { name: "err.catName" } };
 
-    liste[idx] = { ...liste[idx], name: temiz, icon: icon || "📁", color: color || "#6366f1" };
+    liste[idx] = { ...liste[idx], name: temiz, icon: Icon.normalize(icon), color: color || "#6366f1" };
     saveCategories(userId, liste);
     return { ok: true, category: liste[idx] };
   }

@@ -11,6 +11,170 @@
 <body>
 
 <!-- ============================================================
+     0. İKON SETİ
+     Tek bir gizli SVG içinde tanımlanan simgeler, sayfanın her
+     yerinden bir use etiketiyle ve #i-ad biçimindeki kimlikle
+     çağrılır. Çizgi kalınlığı ve renk CSS'teki .icon sınıfından
+     miras alınır, böylece her simge bulunduğu yerin rengini alır.
+     ============================================================ -->
+<svg class="spriteHidden" aria-hidden="true" focusable="false">
+  <defs>
+    <!-- Gezinme -->
+    <symbol id="i-grid" viewBox="0 0 24 24">
+      <rect x="3.5" y="3.5" width="7" height="7" rx="1.6"/>
+      <rect x="13.5" y="3.5" width="7" height="7" rx="1.6"/>
+      <rect x="3.5" y="13.5" width="7" height="7" rx="1.6"/>
+      <rect x="13.5" y="13.5" width="7" height="7" rx="1.6"/>
+    </symbol>
+    <symbol id="i-tasks" viewBox="0 0 24 24">
+      <path d="M10 6.5h10M10 12h10M10 17.5h10"/>
+      <path d="M3.5 6.4l1.4 1.4 2.6-2.8"/>
+      <path d="M3.5 11.9l1.4 1.4 2.6-2.8"/>
+      <path d="M3.5 17.4l1.4 1.4 2.6-2.8"/>
+    </symbol>
+    <symbol id="i-folder" viewBox="0 0 24 24">
+      <path d="M3 7.2a2 2 0 0 1 2-2h3.6a2 2 0 0 1 1.6.8l1 1.4H19a2 2 0 0 1 2 2v7.4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+    </symbol>
+    <symbol id="i-user" viewBox="0 0 24 24">
+      <circle cx="12" cy="8" r="3.6"/>
+      <path d="M5 20.2c0-3.4 3.1-5.6 7-5.6s7 2.2 7 5.6"/>
+    </symbol>
+
+    <!-- Eylemler -->
+    <symbol id="i-search" viewBox="0 0 24 24">
+      <circle cx="10.5" cy="10.5" r="6.6"/>
+      <path d="M15.4 15.4L21 21"/>
+    </symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-edit" viewBox="0 0 24 24">
+      <path d="M16.4 4.6a2.2 2.2 0 0 1 3.1 3.1L8 19.2l-4.1 1 1-4.1z"/>
+      <path d="M14.4 6.6l3.1 3.1"/>
+    </symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24">
+      <path d="M3.8 6.6h16.4"/>
+      <path d="M9.6 6.6V5.1a1.4 1.4 0 0 1 1.4-1.4h2a1.4 1.4 0 0 1 1.4 1.4v1.5"/>
+      <path d="M6.2 6.6l.9 12.1a2 2 0 0 0 2 1.9h5.8a2 2 0 0 0 2-1.9l.9-12.1"/>
+      <path d="M10.2 10.6v6M13.8 10.6v6"/>
+    </symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="M6.2 6.2l11.6 11.6M17.8 6.2L6.2 17.8"/></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.6l4.6 4.6L19 6.8"/></symbol>
+    <symbol id="i-logout" viewBox="0 0 24 24">
+      <path d="M14.5 4.8H7a2 2 0 0 0-2 2v10.4a2 2 0 0 0 2 2h7.5"/>
+      <path d="M10.8 12h10.4M18 8.8l3.2 3.2-3.2 3.2"/>
+    </symbol>
+
+    <!-- Durum -->
+    <symbol id="i-sun" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="4.1"/>
+      <path d="M12 2.4v2.2M12 19.4v2.2M4.6 4.6l1.6 1.6M17.8 17.8l1.6 1.6M2.4 12h2.2M19.4 12h2.2M4.6 19.4l1.6-1.6M17.8 6.2l1.6-1.6"/>
+    </symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24">
+      <path d="M20.4 14.6A8.6 8.6 0 0 1 9.4 3.6a8.6 8.6 0 1 0 11 11z"/>
+    </symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="8.6"/>
+      <path d="M12 7.2V12l3.2 2"/>
+    </symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24">
+      <path d="M12 3.6l9.4 16.2H2.6z"/>
+      <path d="M12 9.6v4.2M12 16.9h.01"/>
+    </symbol>
+    <symbol id="i-info" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="8.8"/>
+      <path d="M12 11.2v5M12 7.9h.01"/>
+    </symbol>
+    <symbol id="i-inbox" viewBox="0 0 24 24">
+      <path d="M2.8 13.4h4.6l1.5 2.8h6.2l1.5-2.8h4.6"/>
+      <path d="M5.6 4.8h12.8l2.8 8.6v4a2 2 0 0 1-2 2H4.8a2 2 0 0 1-2-2v-4z"/>
+    </symbol>
+    <symbol id="i-eye" viewBox="0 0 24 24">
+      <path d="M2.4 12S6.2 5.6 12 5.6 21.6 12 21.6 12 17.8 18.4 12 18.4 2.4 12 2.4 12z"/>
+      <circle cx="12" cy="12" r="3"/>
+    </symbol>
+    <symbol id="i-eye-off" viewBox="0 0 24 24">
+      <path d="M10.6 6.2A9 9 0 0 1 12 6c5.8 0 9.6 6 9.6 6a16.6 16.6 0 0 1-3.1 3.8"/>
+      <path d="M6.7 8A16.4 16.4 0 0 0 2.4 12S6.2 18 12 18c1.4 0 2.7-.3 3.8-.8"/>
+      <path d="M4 4l16 16"/>
+    </symbol>
+
+    <!-- Kategori simgeleri -->
+    <symbol id="i-briefcase" viewBox="0 0 24 24">
+      <rect x="3" y="7.2" width="18" height="12.8" rx="2.4"/>
+      <path d="M9 7.2V5.8a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v1.4"/>
+      <path d="M3 12.4h18"/>
+    </symbol>
+    <symbol id="i-home" viewBox="0 0 24 24">
+      <path d="M3.6 10.6L12 4l8.4 6.6"/>
+      <path d="M5.8 9.4V20h12.4V9.4"/>
+      <path d="M9.8 20v-5.2h4.4V20"/>
+    </symbol>
+    <symbol id="i-book" viewBox="0 0 24 24">
+      <path d="M12 7.2C10.1 5.6 7.6 5 4.8 5.2v12.2c2.8-.2 5.3.4 7.2 2 1.9-1.6 4.4-2.2 7.2-2V5.2c-2.8-.2-5.3.4-7.2 2z"/>
+      <path d="M12 7.2v12.2"/>
+    </symbol>
+    <symbol id="i-cart" viewBox="0 0 24 24">
+      <circle cx="9.6" cy="19.2" r="1.4"/>
+      <circle cx="17.2" cy="19.2" r="1.4"/>
+      <path d="M2.6 3.8h2.2l2.4 11.2a1.5 1.5 0 0 0 1.5 1.2h8.4a1.5 1.5 0 0 0 1.5-1.2l1.4-7.2H6"/>
+    </symbol>
+    <symbol id="i-bulb" viewBox="0 0 24 24">
+      <path d="M12 3.2a6.2 6.2 0 0 0-3.6 11.2c.6.5 1 1.2 1.1 2h5a2.8 2.8 0 0 1 1.1-2A6.2 6.2 0 0 0 12 3.2z"/>
+      <path d="M9.6 19.4h4.8M10.6 21.6h2.8"/>
+    </symbol>
+    <symbol id="i-target" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="8.6"/>
+      <circle cx="12" cy="12" r="4.6"/>
+      <circle cx="12" cy="12" r="1"/>
+    </symbol>
+    <symbol id="i-activity" viewBox="0 0 24 24"><path d="M2.8 12h4.4l2.8-7.2 4 14.4 2.8-7.2h4.4"/></symbol>
+    <symbol id="i-coffee" viewBox="0 0 24 24">
+      <path d="M4 8.4h12.8v5.8a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5z"/>
+      <path d="M16.8 9.8h1.6a2.6 2.6 0 0 1 0 5.2h-1.6"/>
+      <path d="M7.2 2.6v2.6M11.2 2.6v2.6"/>
+    </symbol>
+    <symbol id="i-plane" viewBox="0 0 24 24">
+      <path d="M21 3.4L2.8 10.6l7.2 3.1 3.1 7.2z"/>
+      <path d="M21 3.4L10 13.7"/>
+    </symbol>
+    <symbol id="i-wallet" viewBox="0 0 24 24">
+      <path d="M3.4 7.6a2.2 2.2 0 0 1 2.2-2.2h11.2v2.2"/>
+      <rect x="3.4" y="7.6" width="17.2" height="11.8" rx="2.4"/>
+      <circle cx="16.8" cy="13.5" r="1"/>
+    </symbol>
+    <symbol id="i-music" viewBox="0 0 24 24">
+      <circle cx="7" cy="17.8" r="2.6"/>
+      <circle cx="18" cy="15.8" r="2.6"/>
+      <path d="M9.6 17.8V6.6l11-2v11.2"/>
+    </symbol>
+    <symbol id="i-palette" viewBox="0 0 24 24">
+      <path d="M12 3.4a8.6 8.6 0 0 0 0 17.2 1.9 1.9 0 0 0 1.9-1.9c0-.5-.2-.9-.5-1.3a1.9 1.9 0 0 1 1.4-3.1h1.6a4 4 0 0 0 4-4c0-3.9-3.8-6.9-8.4-6.9z"/>
+      <circle cx="7.6" cy="11.2" r="1.1"/>
+      <circle cx="10.8" cy="7.6" r="1.1"/>
+      <circle cx="15.2" cy="8.6" r="1.1"/>
+    </symbol>
+    <symbol id="i-heart" viewBox="0 0 24 24">
+      <path d="M12 20.4l-7.3-7.2a4.6 4.6 0 0 1 6.5-6.5l.8.8.8-.8a4.6 4.6 0 0 1 6.5 6.5z"/>
+    </symbol>
+    <symbol id="i-leaf" viewBox="0 0 24 24">
+      <path d="M4.2 19.8c-.6-7.8 4.6-13 15.8-12.8.2 8.8-4.4 13.2-10.8 13.2-1.8 0-3.4-.1-5-.4z"/>
+      <path d="M9 15.4c1.6-2.6 3.8-4.8 6.4-6.4"/>
+    </symbol>
+    <symbol id="i-graduation" viewBox="0 0 24 24">
+      <path d="M12 4.2l9.6 4.4-9.6 4.4-9.6-4.4z"/>
+      <path d="M6.6 10.6v5.2c0 1.4 2.4 2.6 5.4 2.6s5.4-1.2 5.4-2.6v-5.2"/>
+    </symbol>
+    <symbol id="i-star" viewBox="0 0 24 24">
+      <path d="M12 3.6l2.6 5.6 6.1.8-4.4 4.2 1.1 6.1L12 17.4l-5.4 2.9 1.1-6.1L3.3 10l6.1-.8z"/>
+    </symbol>
+    <symbol id="i-flag" viewBox="0 0 24 24">
+      <path d="M5.2 21V3.6"/>
+      <path d="M5.2 4.2h11l-1.6 3.6 1.6 3.6h-11"/>
+    </symbol>
+  </defs>
+</svg>
+
+<!-- ============================================================
      1. GİRİŞ EKRANI
      ============================================================ -->
 <div id="authScreen" class="auth">
@@ -18,7 +182,7 @@
   <aside class="auth__hero">
     <div class="auth__heroInner">
       <div class="brand brand--lg">
-        <span class="brand__mark">✓</span>
+        <span class="brand__mark"><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg></span>
         <span class="brand__name" data-i18n="app.name">Mini Todo</span>
       </div>
       <p class="auth__tagline" data-i18n="app.tagline">Görevlerini topla, gününü planla.</p>
@@ -108,7 +272,7 @@
     <div class="auth__card">
 
       <div class="brand brand--sm auth__mobileBrand">
-        <span class="brand__mark">✓</span>
+        <span class="brand__mark"><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg></span>
         <span class="brand__name">Mini Todo</span>
       </div>
 
@@ -232,23 +396,27 @@
 
   <aside class="sidebar" id="sidebar">
     <div class="brand brand--sm sidebar__brand">
-      <span class="brand__mark">✓</span>
+      <span class="brand__mark"><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg></span>
       <span class="brand__name">Mini Todo</span>
     </div>
 
     <nav class="nav">
       <button class="nav__item is-active" data-page="dashboard">
-        <span class="nav__icon">◈</span><span data-i18n="nav.dashboard">Panel</span>
+        <svg class="icon nav__icon" aria-hidden="true"><use href="#i-grid"></use></svg>
+        <span data-i18n="nav.dashboard">Panel</span>
       </button>
       <button class="nav__item" data-page="tasks">
-        <span class="nav__icon">☰</span><span data-i18n="nav.tasks">Görevler</span>
+        <svg class="icon nav__icon" aria-hidden="true"><use href="#i-tasks"></use></svg>
+        <span data-i18n="nav.tasks">Görevler</span>
         <span class="nav__badge" id="navPendingCount">0</span>
       </button>
       <button class="nav__item" data-page="categories">
-        <span class="nav__icon">◳</span><span data-i18n="nav.categories">Kategoriler</span>
+        <svg class="icon nav__icon" aria-hidden="true"><use href="#i-folder"></use></svg>
+        <span data-i18n="nav.categories">Kategoriler</span>
       </button>
       <button class="nav__item" data-page="profile">
-        <span class="nav__icon">◉</span><span data-i18n="nav.profile">Profil</span>
+        <svg class="icon nav__icon" aria-hidden="true"><use href="#i-user"></use></svg>
+        <span data-i18n="nav.profile">Profil</span>
       </button>
     </nav>
 
@@ -260,24 +428,30 @@
           <small id="miniMail">—</small>
         </span>
       </div>
-      <button class="btn btn--ghost btn--block" id="logoutBtn" data-i18n="set.logout">Çıkış Yap</button>
+      <button class="btn btn--ghost btn--block" id="logoutBtn">
+        <svg class="icon" aria-hidden="true"><use href="#i-logout"></use></svg>
+        <span data-i18n="set.logout">Çıkış Yap</span>
+      </button>
     </div>
   </aside>
 
   <div class="main">
 
     <header class="topbar">
-      <button class="iconBtn topbar__menu" id="menuBtn" aria-label="Menü">☰</button>
+      <button class="iconBtn topbar__menu" id="menuBtn" aria-label="Menü">
+        <svg class="icon" aria-hidden="true"><use href="#i-menu"></use></svg>
+      </button>
       <h1 class="topbar__title" id="pageTitle" data-i18n="nav.dashboard">Panel</h1>
 
       <div class="search">
-        <span class="search__icon">⌕</span>
+        <svg class="icon search__icon" aria-hidden="true"><use href="#i-search"></use></svg>
         <input type="search" id="globalSearch" data-i18n-ph="tasks.search" placeholder="Görevlerde ara...">
       </div>
 
-      <button class="iconBtn" id="themeBtn" data-i18n-title="set.theme" title="Görünüm">☾</button>
+      <button class="iconBtn" id="themeBtn" data-i18n-title="set.theme" title="Görünüm"></button>
       <button class="btn btn--primary topbar__add" id="addTaskBtn">
-        <span>+</span><span data-i18n="tasks.add">Görev Ekle</span>
+        <svg class="icon" aria-hidden="true"><use href="#i-plus"></use></svg>
+        <span data-i18n="tasks.add">Görev Ekle</span>
       </button>
     </header>
 
@@ -289,21 +463,33 @@
       </div>
 
       <div class="stats">
-        <button class="stat" data-jump="today">
-          <span class="stat__num" id="statToday">0</span>
-          <span class="stat__label" data-i18n="dash.today">Bugünün görevleri</span>
+        <button class="stat stat--today" data-jump="today">
+          <span class="stat__icon"><svg class="icon" aria-hidden="true"><use href="#i-clock"></use></svg></span>
+          <span class="stat__body">
+            <span class="stat__num" id="statToday">0</span>
+            <span class="stat__label" data-i18n="dash.today">Bugünün görevleri</span>
+          </span>
         </button>
-        <button class="stat" data-jump="pending">
-          <span class="stat__num" id="statPending">0</span>
-          <span class="stat__label" data-i18n="dash.pending">Bekleyen</span>
+        <button class="stat stat--pending" data-jump="pending">
+          <span class="stat__icon"><svg class="icon" aria-hidden="true"><use href="#i-tasks"></use></svg></span>
+          <span class="stat__body">
+            <span class="stat__num" id="statPending">0</span>
+            <span class="stat__label" data-i18n="dash.pending">Bekleyen</span>
+          </span>
         </button>
-        <button class="stat" data-jump="completed">
-          <span class="stat__num" id="statCompleted">0</span>
-          <span class="stat__label" data-i18n="dash.completed">Tamamlanan</span>
+        <button class="stat stat--done" data-jump="completed">
+          <span class="stat__icon"><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg></span>
+          <span class="stat__body">
+            <span class="stat__num" id="statCompleted">0</span>
+            <span class="stat__label" data-i18n="dash.completed">Tamamlanan</span>
+          </span>
         </button>
         <button class="stat stat--warn" data-jump="overdue">
-          <span class="stat__num" id="statOverdue">0</span>
-          <span class="stat__label" data-i18n="dash.overdue">Gecikmiş</span>
+          <span class="stat__icon"><svg class="icon" aria-hidden="true"><use href="#i-alert"></use></svg></span>
+          <span class="stat__body">
+            <span class="stat__num" id="statOverdue">0</span>
+            <span class="stat__label" data-i18n="dash.overdue">Gecikmiş</span>
+          </span>
         </button>
       </div>
 
@@ -360,7 +546,8 @@
       <div class="page__head">
         <h2 data-i18n="cat.title">Kategoriler</h2>
         <button class="btn btn--primary" id="addCategoryBtn">
-          <span>+</span><span data-i18n="cat.new">Yeni Kategori</span>
+          <svg class="icon" aria-hidden="true"><use href="#i-plus"></use></svg>
+          <span data-i18n="cat.new">Yeni Kategori</span>
         </button>
       </div>
       <div id="categoryGrid" class="catGrid"></div>
@@ -504,7 +691,10 @@
             <button class="btn btn--danger" id="resetDataBtn" data-i18n="set.resetData">Verileri sil</button>
           </div>
 
-          <button class="btn btn--ghost btn--block logoutWide" id="logoutBtn2" data-i18n="set.logout">Çıkış Yap</button>
+          <button class="btn btn--ghost btn--block logoutWide" id="logoutBtn2">
+            <svg class="icon" aria-hidden="true"><use href="#i-logout"></use></svg>
+            <span data-i18n="set.logout">Çıkış Yap</span>
+          </button>
         </div>
 
       </div>
@@ -524,7 +714,7 @@
   <div class="modal__box">
     <div class="modal__head">
       <h3 id="taskModalTitle" data-i18n="tasks.newTitle">Yeni Görev</h3>
-      <button class="iconBtn" data-close aria-label="Kapat">✕</button>
+      <button class="iconBtn" data-close aria-label="Kapat"><svg class="icon" aria-hidden="true"><use href="#i-close"></use></svg></button>
     </div>
     <form id="taskForm" novalidate>
       <input type="hidden" name="id">
@@ -574,7 +764,7 @@
   <div class="modal__box modal__box--sm">
     <div class="modal__head">
       <h3 id="categoryModalTitle" data-i18n="cat.new">Yeni Kategori</h3>
-      <button class="iconBtn" data-close aria-label="Kapat">✕</button>
+      <button class="iconBtn" data-close aria-label="Kapat"><svg class="icon" aria-hidden="true"><use href="#i-close"></use></svg></button>
     </div>
     <form id="categoryForm" novalidate>
       <input type="hidden" name="id">
@@ -588,7 +778,7 @@
       <div class="field">
         <span class="field__label" data-i18n="cat.icon">Simge</span>
         <div class="iconPicker" id="iconPicker"></div>
-        <input type="hidden" name="icon" value="📁">
+        <input type="hidden" name="icon" value="folder">
       </div>
 
       <div class="field">
@@ -611,7 +801,7 @@
   <div class="modal__box modal__box--sm">
     <div class="modal__head">
       <h3 data-i18n="auth.resetTitle">Şifre sıfırla</h3>
-      <button class="iconBtn" data-close aria-label="Kapat">✕</button>
+      <button class="iconBtn" data-close aria-label="Kapat"><svg class="icon" aria-hidden="true"><use href="#i-close"></use></svg></button>
     </div>
     <form id="forgotForm" novalidate>
       <p class="muted" data-i18n="auth.resetSub"></p>
@@ -668,6 +858,7 @@
 <!-- Sıra önemli: storage -> utils -> i18n -> data -> auth -> ui -> app -->
 <script src="js/storage.js"></script>
 <script src="js/utils.js"></script>
+<script src="js/icons.js"></script>
 <script src="js/i18n.js"></script>
 <script src="js/data.js"></script>
 <script src="js/auth.js"></script>

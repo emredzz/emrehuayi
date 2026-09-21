@@ -70,10 +70,11 @@ Hesap yalnızca daha önce yoksa oluşturulur; demo hesapta yaptığınız deği
 ## Dosya yapısı
 
 ```
-index.html          Tüm ekranların işaretlemesi
+index.html          Tüm ekranların işaretlemesi ve SVG simge seti
 css/style.css       Stiller, tema değişkenleri, duyarlı düzen
 js/storage.js       localStorage / sessionStorage sarmalayıcı
 js/utils.js         Ortak yardımcılar (kimlik, HTML kaçışı, tarih, karma)
+js/icons.js         Simge yardımcısı ve eski emoji kayıtlarının dönüşümü
 js/i18n.js          Türkçe / İngilizce metinler
 js/data.js          Görev, kategori ve ayar işlemleri
 js/auth.js          Kayıt, giriş, oturum, şifre
@@ -106,6 +107,14 @@ Verileri tamamen temizlemek için tarayıcı geliştirici araçlarından (F12) A
 Gerçek bir uygulamada kimlik doğrulama sunucu tarafında yapılmalı, şifreler bcrypt/argon2 gibi algoritmalarla saklanmalıdır. Bu proje tek kullanıcılık yerel bir demodur.
 
 Kullanıcıdan gelen tüm metinler ekrana basılmadan önce HTML kaçışından geçirilir, böylece görev başlığına kod yazarak çalıştırmak mümkün değildir.
+
+## Arayüz
+
+Simgelerin tamamı `index.html` içindeki gizli SVG sprite'ında tanımlı satır ikonlarıdır; emoji kullanılmaz. Her simge bulunduğu yerin rengini ve yazı boyutunu miras alır, böylece açık ve koyu temada ayrı bir düzenleme gerekmez.
+
+Renkler doygunluğu düşürülmüş tonlardan seçildi: saf siyah yerine kırık koyu gri metin, keskin çizgiler yerine düşük kontrastlı kenarlıklar, sert gölgeler yerine geniş ve soluk gölgeler.
+
+Daha önce emoji ile kaydedilmiş kategoriler okunurken otomatik olarak yeni simge setine çevrilir; eski veriyle açıldığında kategoriler simgesiz kalmaz.
 
 ## Tarayıcı desteği
 
