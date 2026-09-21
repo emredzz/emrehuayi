@@ -57,6 +57,9 @@
       <path d="M10.2 10.6v6M13.8 10.6v6"/>
     </symbol>
     <symbol id="i-close" viewBox="0 0 24 24"><path d="M6.2 6.2l11.6 11.6M17.8 6.2L6.2 17.8"/></symbol>
+    <symbol id="i-filter" viewBox="0 0 24 24">
+      <path d="M4 7h16M7 12h10M10 17h4"/>
+    </symbol>
     <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
     <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.6l4.6 4.6L19 6.8"/></symbol>
     <symbol id="i-logout" viewBox="0 0 24 24">
@@ -524,14 +527,9 @@
 
     <!-- ---------- Görevler ---------- -->
     <section class="page" id="page-tasks" hidden>
-      <div class="page__head">
-        <div class="page__headText">
-          <h2 data-i18n="tasks.title">Görevler</h2>
-          <p class="page__desc" data-i18n="page.tasksDesc">Görevlerini filtrele, ara ve düzenle.</p>
-        </div>
-      </div>
-
-      <div class="filters">
+      <!-- Tek kontrol çubuğu: durum sekmeleri, sonuç sayısı ve
+           gerisi düğme arkasında. Başlık üst çubukta zaten var. -->
+      <div class="toolbar">
         <div class="chips" id="statusChips">
           <button class="chip is-active" data-status="all" data-i18n="tasks.all">Tümü</button>
           <button class="chip" data-status="today" data-i18n="dash.today">Bugün</button>
@@ -540,28 +538,51 @@
           <button class="chip" data-status="overdue" data-i18n="dash.overdue">Gecikmiş</button>
         </div>
 
-        <div class="filters__selects">
-          <select id="filterCategory" class="select"></select>
-          <select id="filterPriority" class="select">
-            <option value="" data-i18n="tasks.fieldPriority">Öncelik</option>
-            <option value="high" data-i18n="prio.high">Yüksek</option>
-            <option value="medium" data-i18n="prio.medium">Orta</option>
-            <option value="low" data-i18n="prio.low">Düşük</option>
-          </select>
-          <select id="filterSort" class="select">
-            <option value="created" data-i18n="sort.created">Eklenme sırası</option>
-            <option value="due" data-i18n="sort.due">Son tarihe göre</option>
-            <option value="priority" data-i18n="sort.priority">Önceliğe göre</option>
-            <option value="title" data-i18n="sort.title">A-Z</option>
-          </select>
+        <span class="toolbar__count" id="resultCount">0</span>
+
+        <div class="filterMenu">
+          <button type="button" class="btn btn--ghost filterMenu__btn" id="filterBtn"
+                  aria-expanded="false" aria-controls="filterPanel">
+            <svg class="icon" aria-hidden="true"><use href="#i-filter"></use></svg>
+            <span data-i18n="res.filter">Filtre</span>
+            <span class="filterMenu__badge" id="filterBadge" hidden>0</span>
+          </button>
+
+          <div class="filterMenu__panel" id="filterPanel" hidden>
+            <label class="field">
+              <span class="field__label" data-i18n="tasks.fieldCategory">Kategori</span>
+              <select id="filterCategory" class="select"></select>
+            </label>
+
+            <label class="field">
+              <span class="field__label" data-i18n="tasks.fieldPriority">Öncelik</span>
+              <select id="filterPriority" class="select">
+                <option value="" data-i18n="tasks.all">Tümü</option>
+                <option value="high" data-i18n="prio.high">Yüksek</option>
+                <option value="medium" data-i18n="prio.medium">Orta</option>
+                <option value="low" data-i18n="prio.low">Düşük</option>
+              </select>
+            </label>
+
+            <label class="field">
+              <span class="field__label" data-i18n="res.sort">Sıralama</span>
+              <select id="filterSort" class="select">
+                <option value="created" data-i18n="sort.created">Eklenme sırası</option>
+                <option value="due" data-i18n="sort.due">Son tarihe göre</option>
+                <option value="priority" data-i18n="sort.priority">Önceliğe göre</option>
+                <option value="title" data-i18n="sort.title">A-Z</option>
+              </select>
+            </label>
+
+            <button type="button" class="link filterMenu__clear" id="clearFilters"
+                    data-i18n="res.clear">Filtreleri temizle</button>
+          </div>
         </div>
       </div>
 
-      <!-- Sonuç şeridi: kaç görev görünüyor, hangi filtreler etkin -->
-      <div class="resultBar" id="resultBar">
-        <span class="resultBar__count" id="resultCount">0</span>
+      <!-- Etkin filtreler yalnızca varsa görünür -->
+      <div class="activeRow" id="resultBar">
         <div class="resultBar__tags" id="activeFilters"></div>
-        <button type="button" class="link resultBar__clear" id="clearFilters" data-i18n="res.clear">Filtreleri temizle</button>
       </div>
 
       <div id="taskList" class="taskList taskList--page"></div>

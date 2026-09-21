@@ -295,7 +295,21 @@
       if (tag) dropFilter(tag.dataset.drop);
     });
 
-    $("#clearFilters").addEventListener("click", clearAllFilters);
+    $("#clearFilters").addEventListener("click", () => {
+      clearAllFilters();
+      toggleFilterMenu(false);
+    });
+
+    /* Filtre menüsü */
+    $("#filterBtn").addEventListener("click", (e) => {
+      e.stopPropagation();
+      toggleFilterMenu();
+    });
+
+    // Panelin içine tıklamak menüyü kapatmasın
+    $("#filterPanel").addEventListener("click", (e) => e.stopPropagation());
+
+    document.addEventListener("click", () => toggleFilterMenu(false));
   }
 
   function closeSidebar() {
@@ -459,6 +473,18 @@
     );
   }
 
+  /* Filtre menüsünü aç/kapat. Dışarı tıklanınca ve Escape ile
+     kapanır; açıkken düğmenin aria durumu da güncellenir. */
+  function toggleFilterMenu(ac) {
+    const panel = $("#filterPanel");
+    const btn = $("#filterBtn");
+    const acik = ac === undefined ? panel.hidden : ac;
+
+    panel.hidden = !acik;
+    btn.setAttribute("aria-expanded", String(acik));
+    btn.classList.toggle("is-open", acik);
+  }
+
   /* Sonuç şeridi: kaç görev görünüyor ve neden bu kadarı görünüyor */
   function renderResultBar(adet, suzulu) {
     $("#resultCount").textContent = `${adet} ${I18N.t("res.found")}`;
@@ -497,7 +523,17 @@
       .join("");
 
     $("#clearFilters").hidden = !suzulu;
-    $("#resultBar").classList.toggle("is-filtered", suzulu);
+
+    // Etkin filtre yoksa satırı hiç göstermiyoruz
+    $("#resultBar").hidden = etiketler.length === 0;
+
+    /* Düğmedeki sayaç yalnızca menü içindeki filtreleri sayar;
+       durum sekmesi ve arama zaten ekranda görünüyor. */
+    const menudeki = (state.filters.categoryId ? 1 : 0) + (state.filters.priority ? 1 : 0);
+    const rozet = $("#filterBadge");
+    rozet.textContent = menudeki;
+    rozet.hidden = menudeki === 0;
+    $("#filterBtn").classList.toggle("is-active", menudeki > 0);
   }
 
   /* Tek bir filtreyi sıfırlar. Render çağrısı ayrı tutuldu ki
@@ -1100,7 +1136,10 @@
 
   function bindGlobalKeys() {
     document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") UI.closeAllModals();
+      if (e.key === "Escape") {
+        UI.closeAllModals();
+        toggleFilterMenu(false);
+      }
 
       // Ctrl/Cmd + K: aramaya odaklan
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {

@@ -50,6 +50,8 @@ const I18N = (() => {
       "res.found": "görev",
       "res.filtered": "süzülmüş",
       "res.clear": "Filtreleri temizle",
+      "res.filter": "Filtre",
+      "res.sort": "Sıralama",
       "res.search": "Arama",
 
       "empty.addTask": "İlk görevini ekle",
@@ -243,6 +245,8 @@ const I18N = (() => {
       "res.found": "tasks",
       "res.filtered": "filtered",
       "res.clear": "Clear filters",
+      "res.filter": "Filter",
+      "res.sort": "Sort",
       "res.search": "Search",
 
       "empty.addTask": "Add your first task",
