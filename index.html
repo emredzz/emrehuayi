@@ -493,6 +493,18 @@
         </button>
       </div>
 
+      <!-- İlerleme: sayıların ne anlama geldiğini tek bakışta gösterir -->
+      <div class="progress" id="progressBox">
+        <div class="progress__head">
+          <span class="progress__label" data-i18n="dash.progress">Tamamlanma durumu</span>
+          <span class="progress__count" id="progressCount">0 / 0</span>
+        </div>
+        <div class="progress__track">
+          <div class="progress__fill" id="progressFill" style="width:0%"></div>
+        </div>
+        <p class="progress__note" id="progressNote"></p>
+      </div>
+
       <div class="cols">
         <div class="card">
           <div class="card__head">
@@ -512,6 +524,13 @@
 
     <!-- ---------- Görevler ---------- -->
     <section class="page" id="page-tasks" hidden>
+      <div class="page__head">
+        <div class="page__headText">
+          <h2 data-i18n="tasks.title">Görevler</h2>
+          <p class="page__desc" data-i18n="page.tasksDesc">Görevlerini filtrele, ara ve düzenle.</p>
+        </div>
+      </div>
+
       <div class="filters">
         <div class="chips" id="statusChips">
           <button class="chip is-active" data-status="all" data-i18n="tasks.all">Tümü</button>
@@ -538,13 +557,23 @@
         </div>
       </div>
 
+      <!-- Sonuç şeridi: kaç görev görünüyor, hangi filtreler etkin -->
+      <div class="resultBar" id="resultBar">
+        <span class="resultBar__count" id="resultCount">0</span>
+        <div class="resultBar__tags" id="activeFilters"></div>
+        <button type="button" class="link resultBar__clear" id="clearFilters" data-i18n="res.clear">Filtreleri temizle</button>
+      </div>
+
       <div id="taskList" class="taskList taskList--page"></div>
     </section>
 
     <!-- ---------- Kategoriler ---------- -->
     <section class="page" id="page-categories" hidden>
       <div class="page__head">
-        <h2 data-i18n="cat.title">Kategoriler</h2>
+        <div class="page__headText">
+          <h2 data-i18n="cat.title">Kategoriler</h2>
+          <p class="page__desc" data-i18n="page.catDesc">Görevlerini gruplamak için kategoriler oluştur.</p>
+        </div>
         <button class="btn btn--primary" id="addCategoryBtn">
           <svg class="icon" aria-hidden="true"><use href="#i-plus"></use></svg>
           <span data-i18n="cat.new">Yeni Kategori</span>
@@ -555,6 +584,13 @@
 
     <!-- ---------- Profil ve Ayarlar ---------- -->
     <section class="page" id="page-profile" hidden>
+      <div class="page__head">
+        <div class="page__headText">
+          <h2 data-i18n="profile.title">Profil</h2>
+          <p class="page__desc" data-i18n="page.profileDesc">Hesap bilgilerini ve uygulama tercihlerini yönet.</p>
+        </div>
+      </div>
+
       <div class="cols cols--profile">
 
         <div class="card">
@@ -627,15 +663,19 @@
         <div class="card">
           <div class="card__head"><h3 data-i18n="set.title">Ayarlar</h3></div>
 
+          <p class="groupLabel" data-i18n="set.groupLook">Görünüm</p>
+
           <div class="setting">
             <div class="setting__text">
-              <strong data-i18n="set.theme">Görünüm</strong>
+              <strong data-i18n="set.theme">Tema</strong>
             </div>
             <div class="segmented" id="themeSeg">
               <button data-theme-val="light" data-i18n="set.light">Açık</button>
               <button data-theme-val="dark" data-i18n="set.dark">Koyu</button>
             </div>
           </div>
+
+          <p class="groupLabel" data-i18n="set.groupNotify">Bildirimler</p>
 
           <div class="setting">
             <div class="setting__text">
@@ -658,6 +698,8 @@
               <span class="switch__track"></span>
             </label>
           </div>
+
+          <p class="groupLabel" data-i18n="set.groupPrefs">Tercihler</p>
 
           <div class="setting">
             <div class="setting__text">
@@ -682,6 +724,8 @@
           </div>
 
           <hr class="sep">
+
+          <p class="groupLabel" data-i18n="set.groupData">Veri ve hesap</p>
 
           <div class="danger">
             <div class="setting__text">

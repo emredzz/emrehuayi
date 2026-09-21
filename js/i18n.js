@@ -37,6 +37,40 @@ const I18N = (() => {
       "auth.demoTitle": "Demo hesabı",
       "auth.demoBtn": "Demo ile gir",
 
+      "page.tasksDesc": "Görevlerini filtrele, ara ve düzenle.",
+      "page.catDesc": "Görevlerini gruplamak için kategoriler oluştur.",
+      "page.profileDesc": "Hesap bilgilerini ve uygulama tercihlerini yönet.",
+
+      "dash.progress": "Tamamlanma durumu",
+      "dash.progressOf": "görevden",
+      "dash.allDone": "Bütün görevler tamam.",
+      "dash.keepGoing": "Devam et, az kaldı.",
+      "dash.noTasksYet": "Henüz görev eklenmedi.",
+
+      "res.found": "görev",
+      "res.filtered": "süzülmüş",
+      "res.clear": "Filtreleri temizle",
+      "res.search": "Arama",
+
+      "empty.addTask": "İlk görevini ekle",
+      "empty.addCat": "Kategori oluştur",
+      "empty.clearFilters": "Filtreleri kaldır",
+      "empty.noMatch": "Bu filtreye uyan görev yok.",
+      "empty.noMatchHint": "Filtreleri gevşetmeyi veya aramayı değiştirmeyi dene.",
+
+      "cat.done": "tamamlandı",
+      "cat.viewTasks": "Görevleri gör",
+
+      "set.groupLook": "Görünüm",
+      "set.groupNotify": "Bildirimler",
+      "set.groupPrefs": "Tercihler",
+      "set.groupData": "Veri ve hesap",
+
+      "tip.title": "Kısayollar",
+      "tip.newTask": "yeni görev",
+      "tip.search": "arama",
+      "tip.close": "pencereyi kapat",
+
       "nav.dashboard": "Panel",
       "nav.tasks": "Görevler",
       "nav.categories": "Kategoriler",
@@ -195,6 +229,40 @@ const I18N = (() => {
       "auth.resetBtn": "Update password",
       "auth.demoTitle": "Demo account",
       "auth.demoBtn": "Try the demo",
+
+      "page.tasksDesc": "Filter, search and edit your tasks.",
+      "page.catDesc": "Create categories to group your tasks.",
+      "page.profileDesc": "Manage your account details and app preferences.",
+
+      "dash.progress": "Progress",
+      "dash.progressOf": "of",
+      "dash.allDone": "Everything is done.",
+      "dash.keepGoing": "Keep going, almost there.",
+      "dash.noTasksYet": "No tasks added yet.",
+
+      "res.found": "tasks",
+      "res.filtered": "filtered",
+      "res.clear": "Clear filters",
+      "res.search": "Search",
+
+      "empty.addTask": "Add your first task",
+      "empty.addCat": "Create a category",
+      "empty.clearFilters": "Remove filters",
+      "empty.noMatch": "No task matches this filter.",
+      "empty.noMatchHint": "Try loosening the filters or changing the search.",
+
+      "cat.done": "done",
+      "cat.viewTasks": "View tasks",
+
+      "set.groupLook": "Appearance",
+      "set.groupNotify": "Notifications",
+      "set.groupPrefs": "Preferences",
+      "set.groupData": "Data and account",
+
+      "tip.title": "Shortcuts",
+      "tip.newTask": "new task",
+      "tip.search": "search",
+      "tip.close": "close dialog",
 
       "nav.dashboard": "Dashboard",
       "nav.tasks": "Tasks",

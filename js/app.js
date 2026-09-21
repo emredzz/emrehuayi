@@ -274,6 +274,26 @@
     });
 
     $("#categoryGrid").addEventListener("click", onCategoryGridClick);
+
+    /* Boş durum düğmeleri — listelerin içinde render edildikleri
+       için burada tek bir üst dinleyiciyle yakalanıyorlar. */
+    $(".main").addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-empty-action]");
+      if (!btn) return;
+
+      const eylem = btn.dataset.emptyAction;
+      if (eylem === "add-task") openTaskModal(null);
+      else if (eylem === "add-cat") openCategoryModal(null);
+      else if (eylem === "clear-filters") clearAllFilters();
+    });
+
+    /* Sonuç şeridindeki filtre etiketleri ve temizleme */
+    $("#activeFilters").addEventListener("click", (e) => {
+      const tag = e.target.closest("[data-drop]");
+      if (tag) dropFilter(tag.dataset.drop);
+    });
+
+    $("#clearFilters").addEventListener("click", clearAllFilters);
   }
 
   function closeSidebar() {
@@ -371,36 +391,154 @@
     $("#statCompleted").textContent = s.completed;
     $("#statOverdue").textContent = s.overdue;
 
+    renderProgress(s);
+
     const bugun = Data.filterTasks(u.id, { status: "today", sort: "priority" });
     $("#todayList").innerHTML = bugun.length
       ? bugun.map(taskItemHTML).join("")
-      : emptyHTML("dash.noToday");
+      : emptyHTML("dash.noToday", null, { action: "add-task", labelKey: "tasks.add" });
 
     const son = Data.getTasks(u.id).slice(0, 5);
     $("#recentList").innerHTML = son.length
       ? son.map(taskItemHTML).join("")
-      : emptyHTML("tasks.empty");
+      : emptyHTML("tasks.empty", null, { action: "add-task", labelKey: "empty.addTask" });
 
     renderSidebar();
+  }
+
+  /* Tamamlanma çubuğu — sayıların ne anlama geldiğini
+     tek bakışta anlatır. */
+  function renderProgress(s) {
+    const oran = s.total ? Math.round((s.completed / s.total) * 100) : 0;
+
+    $("#progressCount").textContent = `${s.completed} / ${s.total}`;
+    $("#progressFill").style.width = oran + "%";
+
+    let not;
+    if (!s.total) not = I18N.t("dash.noTasksYet");
+    else if (s.completed === s.total) not = I18N.t("dash.allDone");
+    else not = `%${oran} — ${I18N.t("dash.keepGoing")}`;
+    $("#progressNote").textContent = not;
+
+    $("#progressBox").classList.toggle("is-complete", s.total > 0 && s.completed === s.total);
   }
 
   function renderTasksPage() {
     if (!state.user) return;
 
     const liste = Data.filterTasks(state.user.id, state.filters);
-    $("#taskList").innerHTML = liste.length
-      ? liste.map(taskItemHTML).join("")
-      : emptyHTML("tasks.empty", "tasks.emptyHint");
+    const suzulu = hasActiveFilters();
 
+    // Boş liste iki farklı sebepten olabilir; her birine ayrı çıkış yolu
+    let bos;
+    if (suzulu) {
+      bos = emptyHTML("empty.noMatch", "empty.noMatchHint", {
+        action: "clear-filters",
+        labelKey: "empty.clearFilters"
+      });
+    } else {
+      bos = emptyHTML("tasks.empty", "tasks.emptyHint", {
+        action: "add-task",
+        labelKey: "empty.addTask"
+      });
+    }
+
+    $("#taskList").innerHTML = liste.length ? liste.map(taskItemHTML).join("") : bos;
+
+    renderResultBar(liste.length, suzulu);
     renderSidebar();
   }
 
-  function emptyHTML(baslikAnahtar, altAnahtar) {
+  /* Varsayılan dışına çıkılmış bir filtre var mı? */
+  function hasActiveFilters() {
+    const f = state.filters;
+    return Boolean(
+      f.search.trim() || (f.status && f.status !== "all") || f.categoryId || f.priority
+    );
+  }
+
+  /* Sonuç şeridi: kaç görev görünüyor ve neden bu kadarı görünüyor */
+  function renderResultBar(adet, suzulu) {
+    $("#resultCount").textContent = `${adet} ${I18N.t("res.found")}`;
+
+    const etiketler = [];
+    const f = state.filters;
+
+    if (f.status && f.status !== "all") {
+      const anahtar = {
+        today: "dash.today",
+        pending: "dash.pending",
+        completed: "dash.completed",
+        overdue: "dash.overdue"
+      }[f.status];
+      if (anahtar) etiketler.push({ tip: "status", metin: I18N.t(anahtar) });
+    }
+
+    if (f.categoryId) {
+      const k = Data.getCategory(state.user.id, f.categoryId);
+      if (k) etiketler.push({ tip: "category", metin: k.name });
+    }
+
+    if (f.priority) etiketler.push({ tip: "priority", metin: I18N.t("prio." + f.priority) });
+
+    if (f.search.trim()) {
+      etiketler.push({ tip: "search", metin: `${I18N.t("res.search")}: ${f.search.trim()}` });
+    }
+
+    $("#activeFilters").innerHTML = etiketler
+      .map(
+        (e) => `
+        <button type="button" class="tag" data-drop="${e.tip}" title="${Utils.escapeHtml(I18N.t("common.close"))}">
+          ${Utils.escapeHtml(e.metin)}${Icon.svg("close", "icon tag__x")}
+        </button>`
+      )
+      .join("");
+
+    $("#clearFilters").hidden = !suzulu;
+    $("#resultBar").classList.toggle("is-filtered", suzulu);
+  }
+
+  /* Tek bir filtreyi sıfırlar. Render çağrısı ayrı tutuldu ki
+     hepsini birden temizlerken liste dört kez yeniden çizilmesin. */
+  function resetFilter(tip) {
+    if (tip === "status") {
+      state.filters.status = "all";
+      $$("#statusChips .chip").forEach((c) =>
+        c.classList.toggle("is-active", c.dataset.status === "all")
+      );
+    } else if (tip === "category") {
+      state.filters.categoryId = "";
+      $("#filterCategory").value = "";
+    } else if (tip === "priority") {
+      state.filters.priority = "";
+      $("#filterPriority").value = "";
+    } else if (tip === "search") {
+      state.filters.search = "";
+      $("#globalSearch").value = "";
+    }
+  }
+
+  function dropFilter(tip) {
+    resetFilter(tip);
+    renderTasksPage();
+  }
+
+  function clearAllFilters() {
+    ["status", "category", "priority", "search"].forEach((t) => resetFilter(t));
+    renderTasksPage();
+  }
+
+  function emptyHTML(baslikAnahtar, altAnahtar, eylem) {
     return `
       <div class="empty">
         <span class="empty__icon">${Icon.svg("inbox")}</span>
         <p>${Utils.escapeHtml(I18N.t(baslikAnahtar))}</p>
         ${altAnahtar ? `<small>${Utils.escapeHtml(I18N.t(altAnahtar))}</small>` : ""}
+        ${eylem
+          ? `<button type="button" class="btn btn--ghost empty__btn" data-empty-action="${eylem.action}">
+               ${Utils.escapeHtml(I18N.t(eylem.labelKey))}
+             </button>`
+          : ""}
       </div>`;
   }
 
@@ -502,7 +640,11 @@
     $("#categoryGrid").innerHTML = liste.length
       ? liste
           .map((c) => {
-            const adet = Data.countByCategory(state.user.id, c.id);
+            const gorevler = Data.getTasks(state.user.id).filter((t) => t.categoryId === c.id);
+            const adet = gorevler.length;
+            const biten = gorevler.filter((t) => t.completed).length;
+            const oran = adet ? Math.round((biten / adet) * 100) : 0;
+
             return `
               <article class="catCard" data-id="${c.id}" style="--c:${Utils.escapeHtml(c.color)}">
                 <div class="catCard__top">
@@ -512,12 +654,21 @@
                     <button class="iconBtn iconBtn--danger" data-action="delete-cat" title="${Utils.escapeHtml(I18N.t("common.delete"))}">${Icon.svg("trash")}</button>
                   </div>
                 </div>
+
                 <h4>${Utils.escapeHtml(c.name)}</h4>
-                <p>${adet} ${Utils.escapeHtml(I18N.t("cat.taskCount"))}</p>
+                <p>${adet} ${Utils.escapeHtml(I18N.t("cat.taskCount"))} · ${biten} ${Utils.escapeHtml(I18N.t("cat.done"))}</p>
+
+                <div class="catCard__bar" role="presentation">
+                  <span style="width:${oran}%"></span>
+                </div>
+
+                <button type="button" class="catCard__link" data-action="view-cat">
+                  ${Utils.escapeHtml(I18N.t("cat.viewTasks"))}
+                </button>
               </article>`;
           })
           .join("")
-      : emptyHTML("cat.empty");
+      : emptyHTML("cat.empty", null, { action: "add-cat", labelKey: "empty.addCat" });
 
     renderCategorySelects();
   }
@@ -553,6 +704,23 @@
     const kart = btn.closest(".catCard");
     if (!kart) return;
     const id = kart.dataset.id;
+
+    /* Kategoriden görevlerine geçiş: filtreyi kurup Görevler
+       sekmesine atlıyoruz, böylece kullanıcı neyi neden
+       gördüğünü sonuç şeridinden okuyabiliyor. */
+    if (btn.dataset.action === "view-cat") {
+      state.filters.categoryId = id;
+      state.filters.status = "all";
+      state.filters.priority = "";
+      $$("#statusChips .chip").forEach((c) =>
+        c.classList.toggle("is-active", c.dataset.status === "all")
+      );
+      $("#filterPriority").value = "";
+      renderCategorySelects();
+      $("#filterCategory").value = id;
+      goPage("tasks");
+      return;
+    }
 
     if (btn.dataset.action === "edit-cat") {
       const kategori = Data.getCategory(state.user.id, id);

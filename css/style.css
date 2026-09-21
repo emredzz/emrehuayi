@@ -725,6 +725,90 @@ button { font: inherit; color: inherit; }
 }
 
 .page__head h2 { font-size: 20.5px; }
+.page__headText { min-width: 0; }
+
+/* Sayfa açıklaması: bu sekmede ne yapıldığını bir cümlede söyler */
+.page__desc {
+  margin-top: 5px;
+  font-size: 13.5px;
+  color: var(--text-2);
+  line-height: 1.55;
+}
+
+/* ---------- İlerleme çubuğu ---------- */
+
+.progress {
+  padding: 18px 20px;
+  margin-bottom: 22px;
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  background: var(--surface);
+}
+
+.progress__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 11px;
+}
+
+.progress__label { font-size: 13.5px; color: var(--text-2); }
+.progress__count { font-size: 14px; font-weight: 500; letter-spacing: -.01em; }
+
+.progress__track {
+  height: 7px;
+  border-radius: 99px;
+  background: var(--surface-3);
+  overflow: hidden;
+}
+
+.progress__fill {
+  display: block;
+  height: 100%;
+  border-radius: 99px;
+  background: var(--primary);
+  transition: width .35s ease, background .25s;
+}
+
+.progress.is-complete .progress__fill { background: var(--success); }
+
+.progress__note { margin-top: 9px; font-size: 12.5px; color: var(--text-3); }
+
+/* ---------- Sonuç şeridi ---------- */
+
+.resultBar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+  min-height: 30px;
+}
+
+.resultBar__count { font-size: 13.5px; color: var(--text-2); }
+.resultBar__tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.resultBar__clear { margin-left: auto; font-size: 13px; }
+
+/* Etkin filtre etiketi — tıklayınca o filtre kalkar */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 8px 4px 11px;
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  background: var(--surface);
+  color: var(--text-2);
+  font-size: 12.5px;
+  cursor: pointer;
+  transition: border-color .16s, color .16s, background .16s;
+  max-width: 260px;
+}
+
+.tag:hover { border-color: var(--danger); color: var(--danger); background: var(--danger-soft); }
+.tag__x { width: 13px; height: 13px; opacity: .6; }
+.tag:hover .tag__x { opacity: 1; }
 
 .hello { margin-bottom: 26px; }
 .hello h2 { font-size: 25px; }
@@ -940,6 +1024,7 @@ button { font: inherit; color: inherit; }
 }
 
 .empty__icon .icon { width: 22px; height: 22px; }
+.empty__btn { margin-top: 16px; }
 .empty p { font-size: 14.5px; font-weight: 400; color: var(--text-2); }
 .empty small { display: block; margin-top: 5px; font-size: 13px; color: var(--text-3); }
 
@@ -979,6 +1064,48 @@ button { font: inherit; color: inherit; }
 .catCard__actions { display: flex; gap: 2px; opacity: 0; transition: opacity .16s; }
 .catCard h4 { margin-top: 15px; font-size: 15.2px; }
 .catCard p { margin-top: 3px; font-size: 13px; color: var(--text-2); }
+
+/* Kategorinin ne kadarı bitmiş — kart üstünde ince bir şerit */
+.catCard__bar {
+  display: block;
+  height: 5px;
+  margin-top: 13px;
+  border-radius: 99px;
+  background: var(--surface-3);
+  overflow: hidden;
+}
+
+.catCard__bar span {
+  display: block;
+  height: 100%;
+  border-radius: 99px;
+  background: var(--c);
+  transition: width .35s ease;
+}
+
+.catCard__link {
+  margin-top: 13px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--primary);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.catCard__link:hover { text-decoration: underline; }
+
+/* Ayarlarda bölüm başlığı */
+.groupLabel {
+  margin: 22px 0 2px;
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.groupLabel:first-of-type { margin-top: 4px; }
 
 /* ---------- 14. Profil ve ayarlar ---------- */
 

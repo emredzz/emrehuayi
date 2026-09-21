@@ -59,6 +59,18 @@ Hesap yalnızca daha önce yoksa oluşturulur; demo hesapta yaptığınız deği
 - Varsayılan görev görünümü
 - Verileri sıfırlama, çıkış
 
+## Yön bulmayı kolaylaştıran bileşenler
+
+Her sekmede ne yapıldığını ve ne görüldüğünü anlatan bir katman var:
+
+- **Sayfa açıklaması** — her sekmenin başlığı altında o sayfanın ne işe yaradığını söyleyen bir cümle
+- **İlerleme çubuğu** — panelde tamamlanma oranı; hepsi bitince çubuk yeşile döner
+- **Sonuç şeridi** — görev listesinde kaç sonuç olduğu, etkin her filtre için birer etiket ve tek tıkla temizleme
+- **Filtre etiketleri** — üzerine tıklayınca yalnızca o filtreyi kaldırır, diğerleri kalır
+- **Kategori ilerlemesi** — her kartta tamamlanma şeridi ve o kategorinin görevlerine giden bağlantı
+- **Eylemli boş durumlar** — liste boşsa sebebine göre farklı çıkış yolu sunar: hiç görev yoksa görev ekleme, filtre yüzünden boşsa filtreleri kaldırma düğmesi
+- **Ayar grupları** — ayarlar Görünüm / Bildirimler / Tercihler / Veri ve hesap başlıkları altında toplanır
+
 ## Klavye kısayolları
 
 | Tuş | İşlev |
