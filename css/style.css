@@ -355,13 +355,53 @@ button { font: inherit; color: inherit; }
 
 /* Görselin altındaki amaç metni */
 .auth__about {
+  position: relative;
   max-width: 430px;
-  margin: 30px auto 0;
-  padding-top: 24px;
-  border-top: 1px solid rgba(255, 255, 255, .2);
+  margin: 34px auto 0;
+  padding-top: 30px;
   font-size: 15px;
   line-height: 1.75;
   opacity: .88;
+}
+
+/* Ayırıcı: iki ucu saydamlığa karışan kısa çizgi.
+   Düz bir kenarlık yerine ortası parlak bir geçiş, panelin
+   yumuşak arka planıyla daha iyi oturuyor. */
+.auth__about::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 170px;
+  height: 1px;
+  transform: translateX(-50%);
+  /* Ortadaki saydam aralık, baklavaya yer açar. Arka plan
+     gradyan olduğu için boşluğu düz renkle kapatmak yerine
+     çizgiyi kesiyoruz — her zeminde temiz durur. */
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, .45) 28%,
+    rgba(255, 255, 255, .45) 44%,
+    rgba(255, 255, 255, 0) 46%,
+    rgba(255, 255, 255, 0) 54%,
+    rgba(255, 255, 255, .45) 56%,
+    rgba(255, 255, 255, .45) 72%,
+    rgba(255, 255, 255, 0) 100%
+  );
+}
+
+/* Çizginin ortasındaki boşluğa oturan küçük baklava */
+.auth__about::after {
+  content: "";
+  position: absolute;
+  top: -2px;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  transform: translateX(-50%) rotate(45deg);
+  border-radius: 1px;
+  background: rgba(255, 255, 255, .8);
 }
 
 .auth__panel { display: grid; place-items: center; padding: 40px 24px; background: var(--bg); }
