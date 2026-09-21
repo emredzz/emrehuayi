@@ -825,9 +825,27 @@ button { font: inherit; color: inherit; }
 .tag__x { width: 13px; height: 13px; opacity: .6; }
 .tag:hover .tag__x { opacity: 1; }
 
-.hello { margin-bottom: 26px; }
-.hello h2 { font-size: 25px; }
-.hello p { color: var(--text-2); font-size: 14px; margin-top: 4px; }
+/* Karşılama — ağırlık yerine renkle ayrılır: selam sözcüğü
+   soluk, ad tam renkte. Böylece ince yazıyla da hiyerarşi kalır. */
+.hello { margin-bottom: 28px; }
+
+.hello__title {
+  font-size: 27px;
+  font-weight: 300;
+  letter-spacing: -.022em;
+  line-height: 1.25;
+}
+
+.hello__greet { color: var(--text-2); }
+.hello__name { color: var(--text); font-weight: 400; }
+
+.hello__date {
+  margin-top: 7px;
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: .02em;
+  color: var(--text-3);
+}
 
 /* İstatistik şeridi — simge solda, sayı ve etiket sağda */
 .stats {
@@ -1407,6 +1425,7 @@ button { font: inherit; color: inherit; }
 }
 
 @media (max-width: 440px) {
+  .hello__title { font-size: 23px; }
   .stats { grid-template-columns: 1fr 1fr; }
   .stat { padding: 14px; gap: 11px; }
   .stat__icon { width: 36px; height: 36px; border-radius: 10px; }
