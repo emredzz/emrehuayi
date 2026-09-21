@@ -79,7 +79,7 @@ const I18N = (() => {
       "nav.profile": "Profil",
 
       "dash.greeting": "Merhaba",
-      "dash.today": "Bugünün görevleri",
+      "dash.today": "Bugün",
       "dash.pending": "Bekleyen",
       "dash.completed": "Tamamlanan",
       "dash.total": "Toplam",
@@ -274,7 +274,7 @@ const I18N = (() => {
       "nav.profile": "Profile",
 
       "dash.greeting": "Hello",
-      "dash.today": "Todays tasks",
+      "dash.today": "Today",
       "dash.pending": "Pending",
       "dash.completed": "Completed",
       "dash.total": "Total",
