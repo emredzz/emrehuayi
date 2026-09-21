@@ -22,7 +22,7 @@ E-posta: qwe@gmail.com
 Şifre  : 123456
 ```
 
-Giriş formunun altındaki **Demo ile gir** düğmesi bu bilgileri doldurup doğrudan girer. Hesap, dört kategoriye dağılmış sekiz örnek görevle gelir — ikisi tamamlanmış, biri gecikmiş, ikisi bugüne ait. Tarihler her açılışta bugüne göre hesaplanır, yani demo ne zaman açılırsa açılsın dolu görünür.
+Giriş formunun altındaki **Demo ile gir** düğmesi bu bilgileri doldurup doğrudan girer. Hesap, dört Türkçe kategoriye dağılmış sekiz örnek görevle gelir — ikisi tamamlanmış, biri gecikmiş, ikisi bugüne ait. Tarihler her açılışta bugüne göre hesaplanır, yani demo ne zaman açılırsa açılsın dolu görünür.
 
 Hesap yalnızca daha önce yoksa oluşturulur; demo hesapta yaptığınız değişiklikler sayfayı yenileyince kaybolmaz.
 
@@ -44,7 +44,7 @@ Hesap yalnızca daha önce yoksa oluşturulur; demo hesapta yaptığınız deği
 - Eklenme, son tarih, öncelik ve A-Z sıralaması
 
 **Kategoriler**
-- Hazır gelenler: Work, Personal, Learning, Shopping
+- Hazır gelenler: İş, Kişisel, Öğrenme, Alışveriş
 - Ad, simge ve renk seçerek yeni kategori
 - Kategori başına görev sayısı
 - Kategori silinince içindeki görevler silinmez, kategorisiz kalır

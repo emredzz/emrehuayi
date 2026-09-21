@@ -20,11 +20,22 @@ const Data = (() => {
 
   /* Yeni hesap açıldığında hazır gelen kategoriler */
   const DEFAULT_CATEGORIES = [
-    { name: "Work", icon: "briefcase", color: "#7c81e8" },
-    { name: "Personal", icon: "home", color: "#d98cb3" },
-    { name: "Learning", icon: "book", color: "#e0a458" },
-    { name: "Shopping", icon: "cart", color: "#5fb99a" }
+    { name: "İş", icon: "briefcase", color: "#7c81e8" },
+    { name: "Kişisel", icon: "home", color: "#d98cb3" },
+    { name: "Öğrenme", icon: "book", color: "#e0a458" },
+    { name: "Alışveriş", icon: "cart", color: "#5fb99a" }
   ];
+
+  /* Uygulama önceden İngilizce adlarla kurulum yapıyordu.
+     Daha önce açılmış hesaplarda bu adlar tek seferlik
+     Türkçeye çevrilir; kullanıcının kendi verdiği adlara
+     dokunulmaz, aynı adda bir kategori zaten varsa atlanır. */
+  const ESKI_ADLAR = {
+    Work: "İş",
+    Personal: "Kişisel",
+    Learning: "Öğrenme",
+    Shopping: "Alışveriş"
+  };
 
   const key = (userId, ad) => `u:${userId}:${ad}`;
 
@@ -260,6 +271,29 @@ const Data = (() => {
     seedDefaults(userId);
   }
 
+  /* Tek seferlik ad çevirisi — bayrak yazıldıktan sonra
+     bir daha çalışmaz, böylece kullanıcı isterse kategoriyi
+     tekrar "Work" diye adlandırabilir. */
+  function migrateCategoryNames(userId) {
+    if (Store.read(key(userId, "catNamesTr"), false)) return;
+
+    const liste = getCategories(userId);
+    let degisti = false;
+
+    const yeni = liste.map((c) => {
+      const hedef = ESKI_ADLAR[c.name];
+      // Hedef ad başka bir kategoride kullanılıyorsa çakışma olmasın
+      if (hedef && !liste.some((o) => o.name === hedef)) {
+        degisti = true;
+        return { ...c, name: hedef };
+      }
+      return c;
+    });
+
+    if (degisti) saveCategories(userId, yeni);
+    Store.write(key(userId, "catNamesTr"), true);
+  }
+
   /* Demo hesabı için örnek görevler.
      Tarihler bugüne göre kaydırılır, böylece demo ne zaman
      açılırsa açılsın "bugün" ve "gecikmiş" görevler dolu görünür. */
@@ -280,21 +314,21 @@ const Data = (() => {
 
     const taslak = [
       { title: "Haftalık raporu tamamla", description: "Pazartesi toplantısından önce gönderilecek.",
-        cat: "Work", priority: "high", gun: 0 },
+        cat: "İş", priority: "high", gun: 0 },
       { title: "Market alışverişi", description: "Kahve, süt, meyve.",
-        cat: "Shopping", priority: "low", gun: 0 },
+        cat: "Alışveriş", priority: "low", gun: 0 },
       { title: "Sunum taslağını hazırla", description: "",
-        cat: "Work", priority: "high", gun: -2 },
+        cat: "İş", priority: "high", gun: -2 },
       { title: "Toplantı notlarını takımla paylaş", description: "",
-        cat: "Work", priority: "medium", gun: 2 },
+        cat: "İş", priority: "medium", gun: 2 },
       { title: "JavaScript modüllerini çalış", description: "import/export ve kapsam konuları.",
-        cat: "Learning", priority: "medium", gun: 5 },
+        cat: "Öğrenme", priority: "medium", gun: 5 },
       { title: "Spor salonuna git", description: "",
-        cat: "Personal", priority: "low", gun: 1 },
+        cat: "Kişisel", priority: "low", gun: 1 },
       { title: "Elektrik faturasını öde", description: "",
-        cat: "Personal", priority: "medium", gun: -1, bitti: true },
+        cat: "Kişisel", priority: "medium", gun: -1, bitti: true },
       { title: "Kitabın ikinci bölümünü bitir", description: "",
-        cat: "Learning", priority: "low", gun: -3, bitti: true }
+        cat: "Öğrenme", priority: "low", gun: -3, bitti: true }
     ];
 
     const simdi = new Date().toISOString();
@@ -332,6 +366,7 @@ const Data = (() => {
     saveSettings,
     seedDefaults,
     seedDemoTasks,
+    migrateCategoryNames,
     resetData
   };
 })();

@@ -69,6 +69,8 @@
   function enterApp(user) {
     state.user = user;
 
+    Data.migrateCategoryNames(user.id);
+
     const ayarlar = Data.getSettings(user.id);
     applyLanguage(ayarlar.language);
     applyTheme(ayarlar.theme);
