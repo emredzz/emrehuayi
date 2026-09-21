@@ -159,7 +159,7 @@ button { font: inherit; color: inherit; }
 
 /* ---------- 4. Marka ---------- */
 
-.brand { display: flex; align-items: center; gap: 11px; }
+.brand { display: flex; align-items: center; gap: 10px; }
 
 .brand__mark {
   display: grid;
@@ -169,8 +169,34 @@ button { font: inherit; color: inherit; }
   border-radius: 11px;
 }
 
-.brand--sm .brand__mark { width: 34px; height: 34px; font-size: 15px; }
-.brand--sm .brand__name { font-size: 16.5px; font-weight: 500; letter-spacing: -.01em; }
+/* Küçük marka (kenar çubuğu ve dar ekran başlığı).
+   Düz doygun bir kare ağır duruyordu; yerine yumuşak bir
+   geçiş, daha küçük bir kutu ve ince çizgili bir tik. */
+.brand--sm .brand__mark {
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  background: linear-gradient(145deg, #9296ef 0%, #7c81e8 100%);
+  box-shadow: 0 3px 9px rgba(124, 129, 232, .26);
+}
+
+.brand--sm .brand__mark .icon {
+  width: 15px;
+  height: 15px;
+  stroke-width: 1.9;
+}
+
+.brand--sm .brand__name {
+  font-size: 16px;
+  font-weight: 400;
+  letter-spacing: .015em;
+  color: var(--text);
+}
+
+[data-theme="dark"] .brand--sm .brand__mark {
+  box-shadow: 0 3px 9px rgba(0, 0, 0, .35);
+}
+
 .brand--lg .brand__mark { width: 46px; height: 46px; font-size: 20px; border-radius: 14px; }
 .brand--lg .brand__name { font-size: 26px; font-weight: 500; }
 
