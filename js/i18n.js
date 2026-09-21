@@ -9,6 +9,7 @@ const I18N = (() => {
     tr: {
       "app.name": "Mini Todo",
       "app.tagline": "Görevlerini topla, gününü planla.",
+      "app.about": "Görevlerini kategorilere ayır, önceliklerini belirle ve son tarihlerini takip et. Her şey senin tarayıcında saklanır: sunucu yok, veri dışarı çıkmaz. İnternet bağlantısı olmadan da çalışır.",
 
       "auth.signin": "Giriş Yap",
       "auth.signup": "Kayıt Ol",
@@ -165,6 +166,7 @@ const I18N = (() => {
     en: {
       "app.name": "Mini Todo",
       "app.tagline": "Collect your tasks, plan your day.",
+      "app.about": "Sort your tasks into categories, set their priority and keep an eye on due dates. Everything is stored in your own browser: no server, no data leaving the machine. It works offline too.",
 
       "auth.signin": "Sign In",
       "auth.signup": "Sign Up",

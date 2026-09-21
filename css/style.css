@@ -313,7 +313,7 @@ button { font: inherit; color: inherit; }
 
 /* ---------- 6. Giriş ekranı ---------- */
 
-.auth { display: grid; grid-template-columns: 1.05fr 1fr; min-height: 100vh; }
+.auth { display: grid; grid-template-columns: 1.15fr 1fr; min-height: 100vh; }
 
 .auth__hero {
   position: relative;
@@ -337,12 +337,32 @@ button { font: inherit; color: inherit; }
   background: rgba(255, 255, 255, .11);
 }
 
-.auth__heroInner { position: relative; z-index: 1; max-width: 420px; text-align: center; }
+.auth__heroInner { position: relative; z-index: 1; max-width: 500px; text-align: center; }
 .auth__heroInner .brand { justify-content: center; }
 .auth__heroInner .brand__mark { background: rgba(255, 255, 255, .22); backdrop-filter: blur(4px); }
 
-.auth__tagline { margin: 14px 0 34px; font-size: 17px; opacity: .92; }
-.auth__art { width: 100%; max-width: 330px; filter: drop-shadow(0 18px 36px rgba(0, 0, 0, .22)); }
+.auth__tagline { margin: 14px 0 30px; font-size: 18px; opacity: .92; }
+
+.auth__art {
+  display: block;
+  width: 100%;
+  max-width: 440px;
+  /* Kısa ekranlarda görsel metni aşağı itmesin diye yükseklik sınırı */
+  max-height: 46vh;
+  margin: 0 auto;
+  filter: drop-shadow(0 20px 42px rgba(0, 0, 0, .25));
+}
+
+/* Görselin altındaki amaç metni */
+.auth__about {
+  max-width: 430px;
+  margin: 30px auto 0;
+  padding-top: 24px;
+  border-top: 1px solid rgba(255, 255, 255, .2);
+  font-size: 15px;
+  line-height: 1.75;
+  opacity: .88;
+}
 
 .auth__panel { display: grid; place-items: center; padding: 40px 24px; background: var(--bg); }
 .auth__card { width: 100%; max-width: 410px; }
