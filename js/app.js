@@ -1,0 +1,945 @@
+/* ============================================================
+   app.js — uygulama akışı
+   Oturum kontrolü, sayfa geçişleri, render ve tüm olay bağlama
+   burada toplanır. Diğer dosyalar veri/araç katmanı; ekranla
+   konuşan tek yer bu.
+   ============================================================ */
+
+(() => {
+  /* ---------- Durum ---------- */
+
+  const state = {
+    user: null,
+    page: "dashboard",
+    filters: {
+      search: "",
+      status: "all",
+      categoryId: "",
+      priority: "",
+      sort: "created"
+    }
+  };
+
+  const ICONS = [
+    "📁", "💼", "🏠", "📚", "🛒", "💡", "🎯", "🏃", "🍳", "✈️",
+    "💰", "🎵", "🎨", "🔧", "❤️", "🌱", "📞", "🎓", "🐾", "⭐"
+  ];
+
+  const COLORS = [
+    "#6366f1", "#8b5cf6", "#ec4899", "#ef4444", "#f59e0b",
+    "#10b981", "#14b8a6", "#0ea5e9", "#64748b", "#84cc16"
+  ];
+
+  const $ = (sel, root = document) => root.querySelector(sel);
+  const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+
+  /* ============================================================
+     AÇILIŞ
+     ============================================================ */
+
+  function init() {
+    bindAuthScreen();
+    bindAppShell();
+    bindTaskModal();
+    bindCategoryModal();
+    bindProfilePage();
+    bindSettings();
+    bindGlobalKeys();
+
+    const kullanici = Auth.currentUser();
+    if (kullanici) {
+      enterApp(kullanici);
+    } else {
+      // Oturum yokken de kayıtlı bir dil tercihi varsa onu kullan
+      applyLanguage(Store.read("lastLanguage", "tr"));
+      showAuth();
+    }
+
+    UI.bindPasswordToggles();
+  }
+
+  function showAuth() {
+    $("#authScreen").hidden = false;
+    $("#app").hidden = true;
+    document.documentElement.dataset.theme = Store.read("lastTheme", "light");
+    updateThemeButton();
+  }
+
+  /* Giriş başarılı: ayarları yükle, ekranı kur, panele geç */
+  function enterApp(user) {
+    state.user = user;
+
+    const ayarlar = Data.getSettings(user.id);
+    applyLanguage(ayarlar.language);
+    applyTheme(ayarlar.theme);
+    state.filters.status = ayarlar.defaultView || "all";
+
+    $("#authScreen").hidden = true;
+    $("#app").hidden = false;
+
+    // Filtre çipini varsayılan görünüme göre işaretle
+    $$("#statusChips .chip").forEach((c) =>
+      c.classList.toggle("is-active", c.dataset.status === state.filters.status)
+    );
+    $("#filterSort").value = state.filters.sort;
+
+    goPage("dashboard");
+    renderAll();
+  }
+
+  /* ============================================================
+     GİRİŞ EKRANI
+     ============================================================ */
+
+  function bindAuthScreen() {
+    const signinForm = $("#signinForm");
+    const signupForm = $("#signupForm");
+
+    function showTab(hangi) {
+      const giris = hangi === "signin";
+      $("#tabSignin").classList.toggle("is-active", giris);
+      $("#tabSignup").classList.toggle("is-active", !giris);
+      $("#tabSignin").setAttribute("aria-selected", String(giris));
+      $("#tabSignup").setAttribute("aria-selected", String(!giris));
+      signinForm.hidden = !giris;
+      signupForm.hidden = giris;
+      UI.clearErrors(signinForm);
+      UI.clearErrors(signupForm);
+    }
+
+    $("#tabSignin").addEventListener("click", () => showTab("signin"));
+    $("#tabSignup").addEventListener("click", () => showTab("signup"));
+    $$("[data-goto]").forEach((b) =>
+      b.addEventListener("click", () => showTab(b.dataset.goto))
+    );
+
+    /* --- Giriş --- */
+    signinForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const fd = new FormData(signinForm);
+      const sonuc = Auth.signIn({
+        email: fd.get("email"),
+        password: fd.get("password"),
+        remember: fd.get("remember") === "on"
+      });
+
+      if (!sonuc.ok) return UI.showErrors(signinForm, sonuc.errors);
+
+      UI.clearErrors(signinForm);
+      signinForm.reset();
+      enterApp(sonuc.user);
+      UI.toast(I18N.t("msg.signedIn"));
+    });
+
+    /* --- Kayıt --- */
+    signupForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const fd = new FormData(signupForm);
+      const sonuc = Auth.signUp({
+        fullName: fd.get("fullName"),
+        username: fd.get("username"),
+        email: fd.get("email"),
+        password: fd.get("password"),
+        passwordAgain: fd.get("passwordAgain")
+      });
+
+      if (!sonuc.ok) return UI.showErrors(signupForm, sonuc.errors);
+
+      // Yeni hesapta oturumu kalıcı açıyoruz
+      Store.writeSession({ userId: sonuc.user.id, at: new Date().toISOString() }, true);
+      UI.clearErrors(signupForm);
+      signupForm.reset();
+      enterApp(sonuc.user);
+      UI.toast(I18N.t("msg.signedUp"));
+    });
+
+    /* --- Şifremi unuttum --- */
+    $("#forgotLink").addEventListener("click", () => UI.openModal("forgotModal"));
+
+    const forgotForm = $("#forgotForm");
+    forgotForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const fd = new FormData(forgotForm);
+      const sonuc = Auth.resetPassword({
+        email: fd.get("email"),
+        password: fd.get("password"),
+        passwordAgain: fd.get("passwordAgain")
+      });
+
+      if (!sonuc.ok) return UI.showErrors(forgotForm, sonuc.errors);
+
+      UI.clearErrors(forgotForm);
+      forgotForm.reset();
+      UI.closeModal("forgotModal");
+      UI.toast(I18N.t("msg.passChanged"));
+    });
+  }
+
+  /* ============================================================
+     UYGULAMA KABUĞU
+     ============================================================ */
+
+  function bindAppShell() {
+    $$(".nav__item").forEach((btn) =>
+      btn.addEventListener("click", () => {
+        goPage(btn.dataset.page);
+        closeSidebar();
+      })
+    );
+
+    $("#menuBtn").addEventListener("click", () => {
+      const acik = $("#sidebar").classList.toggle("is-open");
+      document.body.classList.toggle("sidebar-open", acik);
+    });
+    $("#sidebarBackdrop").addEventListener("click", closeSidebar);
+
+    $("#addTaskBtn").addEventListener("click", () => openTaskModal(null));
+    $("#addCategoryBtn").addEventListener("click", () => openCategoryModal(null));
+
+    $("#themeBtn").addEventListener("click", () => {
+      const yeni = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+      applyTheme(yeni);
+      if (state.user) Data.saveSettings(state.user.id, { theme: yeni });
+      syncSettingsForm();
+    });
+
+    $("#logoutBtn").addEventListener("click", logout);
+    $("#logoutBtn2").addEventListener("click", logout);
+
+    /* Arama — her tuşta değil, yazma durunca render */
+    $("#globalSearch").addEventListener(
+      "input",
+      Utils.debounce((e) => {
+        state.filters.search = e.target.value;
+        if (state.page !== "tasks") goPage("tasks");
+        renderTasksPage();
+      }, 220)
+    );
+
+    /* Panel istatistik kartları ilgili filtreye atlar */
+    $$("[data-jump]").forEach((btn) =>
+      btn.addEventListener("click", () => {
+        state.filters.status = btn.dataset.jump;
+        state.filters.categoryId = "";
+        state.filters.priority = "";
+        $$("#statusChips .chip").forEach((c) =>
+          c.classList.toggle("is-active", c.dataset.status === btn.dataset.jump)
+        );
+        $("#filterCategory").value = "";
+        $("#filterPriority").value = "";
+        goPage("tasks");
+      })
+    );
+
+    /* Görev sayfası filtreleri */
+    $$("#statusChips .chip").forEach((chip) =>
+      chip.addEventListener("click", () => {
+        $$("#statusChips .chip").forEach((c) => c.classList.remove("is-active"));
+        chip.classList.add("is-active");
+        state.filters.status = chip.dataset.status;
+        renderTasksPage();
+      })
+    );
+
+    $("#filterCategory").addEventListener("change", (e) => {
+      state.filters.categoryId = e.target.value;
+      renderTasksPage();
+    });
+    $("#filterPriority").addEventListener("change", (e) => {
+      state.filters.priority = e.target.value;
+      renderTasksPage();
+    });
+    $("#filterSort").addEventListener("change", (e) => {
+      state.filters.sort = e.target.value;
+      renderTasksPage();
+    });
+
+    /* Görev listelerindeki tıklamalar — tek dinleyici, olay delegasyonu.
+       Liste her render'da yeniden çiziliyor, tek tek bağlamak anlamsız. */
+    ["#taskList", "#todayList", "#recentList"].forEach((sel) => {
+      $(sel).addEventListener("click", onTaskListClick);
+    });
+
+    $("#categoryGrid").addEventListener("click", onCategoryGridClick);
+  }
+
+  function closeSidebar() {
+    $("#sidebar").classList.remove("is-open");
+    document.body.classList.remove("sidebar-open");
+  }
+
+  function goPage(page) {
+    state.page = page;
+
+    $$(".page").forEach((p) => (p.hidden = p.id !== `page-${page}`));
+    $$(".nav__item").forEach((n) =>
+      n.classList.toggle("is-active", n.dataset.page === page)
+    );
+
+    const basliklar = {
+      dashboard: "nav.dashboard",
+      tasks: "nav.tasks",
+      categories: "nav.categories",
+      profile: "nav.profile"
+    };
+    const baslik = $("#pageTitle");
+    baslik.dataset.i18n = basliklar[page];
+    baslik.textContent = I18N.t(basliklar[page]);
+
+    if (page === "dashboard") renderDashboard();
+    if (page === "tasks") renderTasksPage();
+    if (page === "categories") renderCategories();
+    if (page === "profile") renderProfile();
+  }
+
+  function logout() {
+    Auth.signOut();
+    state.user = null;
+    $("#globalSearch").value = "";
+    state.filters = { search: "", status: "all", categoryId: "", priority: "", sort: "created" };
+    showAuth();
+    UI.toast(I18N.t("msg.signedOut"), "info");
+  }
+
+  /* ============================================================
+     RENDER
+     ============================================================ */
+
+  function renderAll() {
+    renderSidebar();
+    renderCategorySelects();
+    renderDashboard();
+    renderTasksPage();
+    renderCategories();
+    renderProfile();
+    syncSettingsForm();
+  }
+
+  function renderSidebar() {
+    if (!state.user) return;
+    const u = state.user;
+
+    $("#miniName").textContent = u.fullName;
+    $("#miniMail").textContent = u.email;
+    setAvatar($("#miniAvatar"), u);
+
+    const s = Data.stats(u.id);
+    const rozet = $("#navPendingCount");
+    rozet.textContent = s.pending;
+    rozet.hidden = s.pending === 0;
+  }
+
+  /* Avatar: fotoğraf varsa arka plan görseli, yoksa baş harfler */
+  function setAvatar(el, user) {
+    if (user.avatar) {
+      el.style.backgroundImage = `url("${user.avatar}")`;
+      el.textContent = "";
+      el.classList.add("avatar--img");
+    } else {
+      el.style.backgroundImage = "";
+      el.textContent = Utils.initials(user.fullName);
+      el.classList.remove("avatar--img");
+    }
+  }
+
+  function renderDashboard() {
+    if (!state.user) return;
+    const u = state.user;
+
+    $("#helloName").textContent = u.fullName.split(" ")[0];
+    $("#helloDate").textContent = new Date().toLocaleDateString(
+      I18N.getLang() === "tr" ? "tr-TR" : "en-GB",
+      { weekday: "long", day: "numeric", month: "long", year: "numeric" }
+    );
+
+    const s = Data.stats(u.id);
+    $("#statToday").textContent = s.today;
+    $("#statPending").textContent = s.pending;
+    $("#statCompleted").textContent = s.completed;
+    $("#statOverdue").textContent = s.overdue;
+
+    const bugun = Data.filterTasks(u.id, { status: "today", sort: "priority" });
+    $("#todayList").innerHTML = bugun.length
+      ? bugun.map(taskItemHTML).join("")
+      : emptyHTML("dash.noToday");
+
+    const son = Data.getTasks(u.id).slice(0, 5);
+    $("#recentList").innerHTML = son.length
+      ? son.map(taskItemHTML).join("")
+      : emptyHTML("tasks.empty");
+
+    renderSidebar();
+  }
+
+  function renderTasksPage() {
+    if (!state.user) return;
+
+    const liste = Data.filterTasks(state.user.id, state.filters);
+    $("#taskList").innerHTML = liste.length
+      ? liste.map(taskItemHTML).join("")
+      : emptyHTML("tasks.empty", "tasks.emptyHint");
+
+    renderSidebar();
+  }
+
+  function emptyHTML(baslikAnahtar, altAnahtar) {
+    return `
+      <div class="empty">
+        <div class="empty__icon">✦</div>
+        <p>${Utils.escapeHtml(I18N.t(baslikAnahtar))}</p>
+        ${altAnahtar ? `<small>${Utils.escapeHtml(I18N.t(altAnahtar))}</small>` : ""}
+      </div>`;
+  }
+
+  /* Tek bir görev satırı */
+  function taskItemHTML(task) {
+    const kategori = task.categoryId ? Data.getCategory(state.user.id, task.categoryId) : null;
+    const gecikti = !task.completed && Utils.isOverdue(task.dueDate);
+    const bugunMu = Utils.isToday(task.dueDate);
+
+    let tarihMetni = "";
+    if (task.dueDate) {
+      if (gecikti) tarihMetni = I18N.t("tasks.overdue");
+      else if (bugunMu) tarihMetni = I18N.t("tasks.dueToday");
+      else tarihMetni = I18N.formatDate(task.dueDate);
+    }
+
+    const kategoriRozeti = kategori
+      ? `<span class="badge" style="--c:${Utils.escapeHtml(kategori.color)}">
+           <span>${Utils.escapeHtml(kategori.icon)}</span>${Utils.escapeHtml(kategori.name)}
+         </span>`
+      : "";
+
+    return `
+      <article class="task ${task.completed ? "is-done" : ""}" data-id="${task.id}">
+        <button class="task__check" data-action="toggle" aria-label="${Utils.escapeHtml(I18N.t("msg.taskDone"))}">
+          <span>✓</span>
+        </button>
+
+        <div class="task__body">
+          <h4 class="task__title">${Utils.escapeHtml(task.title)}</h4>
+          ${task.description ? `<p class="task__desc">${Utils.escapeHtml(task.description)}</p>` : ""}
+          <div class="task__meta">
+            <span class="prio prio--${task.priority}">${Utils.escapeHtml(I18N.t("prio." + task.priority))}</span>
+            ${kategoriRozeti}
+            ${tarihMetni ? `<span class="due ${gecikti ? "is-overdue" : ""} ${bugunMu ? "is-today" : ""}">◔ ${Utils.escapeHtml(tarihMetni)}</span>` : ""}
+          </div>
+        </div>
+
+        <div class="task__actions">
+          <button class="iconBtn" data-action="edit" data-i18n-title="common.edit" title="${Utils.escapeHtml(I18N.t("common.edit"))}">✎</button>
+          <button class="iconBtn iconBtn--danger" data-action="delete" title="${Utils.escapeHtml(I18N.t("common.delete"))}">🗑</button>
+        </div>
+      </article>`;
+  }
+
+  async function onTaskListClick(e) {
+    const btn = e.target.closest("[data-action]");
+    if (!btn) return;
+
+    const kart = btn.closest(".task");
+    if (!kart) return;
+    const id = kart.dataset.id;
+
+    if (btn.dataset.action === "toggle") {
+      const gorev = Data.toggleTask(state.user.id, id);
+      renderDashboard();
+      renderTasksPage();
+
+      if (gorev && gorev.completed) {
+        UI.toast(I18N.t("msg.taskDone"));
+        const ayarlar = Data.getSettings(state.user.id);
+        if (ayarlar.notifications) UI.notify(I18N.t("msg.taskDone"), gorev.title);
+      }
+      return;
+    }
+
+    if (btn.dataset.action === "edit") {
+      const gorev = Data.getTasks(state.user.id).find((t) => t.id === id);
+      if (gorev) openTaskModal(gorev);
+      return;
+    }
+
+    if (btn.dataset.action === "delete") {
+      const onay = await UI.confirm({
+        title: I18N.t("tasks.deleteTitle"),
+        body: I18N.t("tasks.deleteBody"),
+        confirmText: I18N.t("common.delete")
+      });
+      if (!onay) return;
+
+      Data.deleteTask(state.user.id, id);
+      renderDashboard();
+      renderTasksPage();
+      renderCategories();
+      UI.toast(I18N.t("msg.taskDeleted"), "info");
+    }
+  }
+
+  /* ---------- Kategoriler ---------- */
+
+  function renderCategories() {
+    if (!state.user) return;
+    const liste = Data.getCategories(state.user.id);
+
+    $("#categoryGrid").innerHTML = liste.length
+      ? liste
+          .map((c) => {
+            const adet = Data.countByCategory(state.user.id, c.id);
+            return `
+              <article class="catCard" data-id="${c.id}" style="--c:${Utils.escapeHtml(c.color)}">
+                <div class="catCard__top">
+                  <span class="catCard__icon">${Utils.escapeHtml(c.icon)}</span>
+                  <div class="catCard__actions">
+                    <button class="iconBtn" data-action="edit-cat" title="${Utils.escapeHtml(I18N.t("common.edit"))}">✎</button>
+                    <button class="iconBtn iconBtn--danger" data-action="delete-cat" title="${Utils.escapeHtml(I18N.t("common.delete"))}">🗑</button>
+                  </div>
+                </div>
+                <h4>${Utils.escapeHtml(c.name)}</h4>
+                <p>${adet} ${Utils.escapeHtml(I18N.t("cat.taskCount"))}</p>
+              </article>`;
+          })
+          .join("")
+      : emptyHTML("cat.empty");
+
+    renderCategorySelects();
+  }
+
+  /* Kategori listesi hem filtre hem görev formu açılır menüsünü besler */
+  function renderCategorySelects() {
+    if (!state.user) return;
+    const liste = Data.getCategories(state.user.id);
+
+    const filtre = $("#filterCategory");
+    const secili = state.filters.categoryId;
+    filtre.innerHTML =
+      `<option value="">${Utils.escapeHtml(I18N.t("cat.all"))}</option>` +
+      liste
+        .map((c) => `<option value="${c.id}">${Utils.escapeHtml(c.icon + " " + c.name)}</option>`)
+        .join("");
+    filtre.value = secili;
+
+    const form = $("#taskCategorySelect");
+    const formSecili = form.value;
+    form.innerHTML =
+      `<option value="">${Utils.escapeHtml(I18N.t("tasks.noCategory"))}</option>` +
+      liste
+        .map((c) => `<option value="${c.id}">${Utils.escapeHtml(c.icon + " " + c.name)}</option>`)
+        .join("");
+    form.value = formSecili;
+  }
+
+  async function onCategoryGridClick(e) {
+    const btn = e.target.closest("[data-action]");
+    if (!btn) return;
+
+    const kart = btn.closest(".catCard");
+    if (!kart) return;
+    const id = kart.dataset.id;
+
+    if (btn.dataset.action === "edit-cat") {
+      const kategori = Data.getCategory(state.user.id, id);
+      if (kategori) openCategoryModal(kategori);
+      return;
+    }
+
+    if (btn.dataset.action === "delete-cat") {
+      const onay = await UI.confirm({
+        title: I18N.t("cat.deleteTitle"),
+        body: I18N.t("cat.deleteBody"),
+        confirmText: I18N.t("common.delete")
+      });
+      if (!onay) return;
+
+      Data.deleteCategory(state.user.id, id);
+      renderCategories();
+      renderTasksPage();
+      renderDashboard();
+      UI.toast(I18N.t("msg.catDeleted"), "info");
+    }
+  }
+
+  /* ============================================================
+     GÖREV MODALI
+     ============================================================ */
+
+  function openTaskModal(task) {
+    const form = $("#taskForm");
+    UI.clearErrors(form);
+    form.reset();
+    renderCategorySelects();
+
+    /* form.elements üzerinden gidiyoruz: form.id ve form.title
+       doğrudan yazıldığında alanlara değil, formun kendi id/title
+       özelliklerine denk gelir ve değer sessizce kaybolur. */
+    const el = form.elements;
+
+    if (task) {
+      $("#taskModalTitle").textContent = I18N.t("tasks.editTitle");
+      $("#taskSubmit").textContent = I18N.t("tasks.save");
+      el.id.value = task.id;
+      el.title.value = task.title;
+      el.description.value = task.description || "";
+      el.categoryId.value = task.categoryId || "";
+      el.priority.value = task.priority;
+      el.dueDate.value = task.dueDate || "";
+    } else {
+      $("#taskModalTitle").textContent = I18N.t("tasks.newTitle");
+      $("#taskSubmit").textContent = I18N.t("tasks.create");
+      el.id.value = "";
+      el.priority.value = "medium";
+      el.dueDate.value = Utils.todayISO();
+    }
+
+    UI.openModal("taskModal");
+  }
+
+  function bindTaskModal() {
+    const form = $("#taskForm");
+
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const fd = new FormData(form);
+      const id = fd.get("id");
+
+      const veri = {
+        title: fd.get("title"),
+        description: fd.get("description"),
+        categoryId: fd.get("categoryId") || null,
+        priority: fd.get("priority"),
+        dueDate: fd.get("dueDate") || null
+      };
+
+      const sonuc = id
+        ? Data.updateTask(state.user.id, id, veri)
+        : Data.addTask(state.user.id, veri);
+
+      if (!sonuc.ok) return UI.showErrors(form, sonuc.errors);
+
+      UI.closeModal("taskModal");
+      renderDashboard();
+      renderTasksPage();
+      renderCategories();
+      UI.toast(I18N.t(id ? "msg.taskUpdated" : "msg.taskAdded"));
+    });
+  }
+
+  /* ============================================================
+     KATEGORİ MODALI
+     ============================================================ */
+
+  function buildPickers() {
+    const iconKap = $("#iconPicker");
+    if (!iconKap.dataset.built) {
+      iconKap.innerHTML = ICONS.map(
+        (i) => `<button type="button" class="iconOpt" data-icon="${i}">${i}</button>`
+      ).join("");
+      iconKap.dataset.built = "1";
+
+      iconKap.addEventListener("click", (e) => {
+        const btn = e.target.closest(".iconOpt");
+        if (!btn) return;
+        $$(".iconOpt", iconKap).forEach((b) => b.classList.remove("is-active"));
+        btn.classList.add("is-active");
+        $("#categoryForm").elements.icon.value = btn.dataset.icon;
+      });
+    }
+
+    const renkKap = $("#colorPicker");
+    if (!renkKap.dataset.built) {
+      renkKap.innerHTML = COLORS.map(
+        (c) => `<button type="button" class="colorOpt" data-color="${c}" style="--c:${c}"></button>`
+      ).join("");
+      renkKap.dataset.built = "1";
+
+      renkKap.addEventListener("click", (e) => {
+        const btn = e.target.closest(".colorOpt");
+        if (!btn) return;
+        $$(".colorOpt", renkKap).forEach((b) => b.classList.remove("is-active"));
+        btn.classList.add("is-active");
+        $("#categoryForm").elements.color.value = btn.dataset.color;
+      });
+    }
+  }
+
+  function openCategoryModal(category) {
+    buildPickers();
+
+    const form = $("#categoryForm");
+    UI.clearErrors(form);
+    form.reset();
+
+    const icon = category ? category.icon : ICONS[0];
+    const color = category ? category.color : COLORS[0];
+
+    const el = form.elements;
+    el.id.value = category ? category.id : "";
+    el.name.value = category ? category.name : "";
+    el.icon.value = icon;
+    el.color.value = color;
+
+    $$(".iconOpt").forEach((b) => b.classList.toggle("is-active", b.dataset.icon === icon));
+    $$(".colorOpt").forEach((b) => b.classList.toggle("is-active", b.dataset.color === color));
+
+    $("#categoryModalTitle").textContent = I18N.t(category ? "cat.editTitle" : "cat.new");
+    $("#categorySubmit").textContent = I18N.t(category ? "cat.save" : "cat.create");
+
+    UI.openModal("categoryModal");
+  }
+
+  function bindCategoryModal() {
+    const form = $("#categoryForm");
+
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const fd = new FormData(form);
+      const id = fd.get("id");
+
+      const veri = {
+        name: fd.get("name"),
+        icon: fd.get("icon"),
+        color: fd.get("color")
+      };
+
+      const sonuc = id
+        ? Data.updateCategory(state.user.id, id, veri)
+        : Data.addCategory(state.user.id, veri);
+
+      if (!sonuc.ok) return UI.showErrors(form, sonuc.errors);
+
+      UI.closeModal("categoryModal");
+      renderCategories();
+      renderTasksPage();
+      UI.toast(I18N.t(id ? "msg.catUpdated" : "msg.catAdded"));
+    });
+  }
+
+  /* ============================================================
+     PROFİL
+     ============================================================ */
+
+  function renderProfile() {
+    if (!state.user) return;
+    const u = state.user;
+
+    const el = $("#profileForm").elements;
+    el.fullName.value = u.fullName;
+    el.username.value = u.username;
+    el.email.value = u.email;
+    setAvatar($("#profileAvatar"), u);
+  }
+
+  function bindProfilePage() {
+    const form = $("#profileForm");
+
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const fd = new FormData(form);
+      const sonuc = Auth.updateProfile(state.user.id, {
+        fullName: fd.get("fullName"),
+        username: fd.get("username"),
+        email: fd.get("email")
+      });
+
+      if (!sonuc.ok) return UI.showErrors(form, sonuc.errors);
+
+      state.user = sonuc.user;
+      UI.clearErrors(form);
+      renderSidebar();
+      renderDashboard();
+      UI.toast(I18N.t("msg.profileSaved"));
+    });
+
+    /* --- Fotoğraf yükleme ---
+       Dosya base64 olarak localStorage'a gider. Depolama sınırı
+       ~5 MB olduğu için 1 MB üstünü kabul etmiyoruz. */
+    $("#avatarInput").addEventListener("change", (e) => {
+      const dosya = e.target.files && e.target.files[0];
+      if (!dosya) return;
+
+      if (dosya.size > 1024 * 1024) {
+        UI.toast(I18N.t("err.imageBig"), "error");
+        e.target.value = "";
+        return;
+      }
+
+      const okuyucu = new FileReader();
+      okuyucu.onload = () => {
+        const sonuc = Auth.updateProfile(state.user.id, {
+          fullName: state.user.fullName,
+          username: state.user.username,
+          email: state.user.email,
+          avatar: okuyucu.result
+        });
+
+        if (!sonuc.ok) {
+          UI.toast(I18N.t("err.storageFull"), "error");
+          return;
+        }
+
+        state.user = sonuc.user;
+        setAvatar($("#profileAvatar"), state.user);
+        renderSidebar();
+        UI.toast(I18N.t("msg.profileSaved"));
+      };
+      okuyucu.onerror = () => UI.toast(I18N.t("err.imageBig"), "error");
+      okuyucu.readAsDataURL(dosya);
+      e.target.value = "";
+    });
+
+    $("#removeAvatarBtn").addEventListener("click", () => {
+      const sonuc = Auth.updateProfile(state.user.id, {
+        fullName: state.user.fullName,
+        username: state.user.username,
+        email: state.user.email,
+        avatar: null
+      });
+      if (!sonuc.ok) return;
+
+      state.user = sonuc.user;
+      setAvatar($("#profileAvatar"), state.user);
+      renderSidebar();
+      UI.toast(I18N.t("msg.profileSaved"));
+    });
+
+    /* --- Şifre değiştirme --- */
+    const passForm = $("#passwordForm");
+    passForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const fd = new FormData(passForm);
+      const sonuc = Auth.changePassword(state.user.id, {
+        current: fd.get("current"),
+        next: fd.get("next"),
+        nextAgain: fd.get("nextAgain")
+      });
+
+      if (!sonuc.ok) return UI.showErrors(passForm, sonuc.errors);
+
+      UI.clearErrors(passForm);
+      passForm.reset();
+      UI.toast(I18N.t("msg.passChanged"));
+    });
+  }
+
+  /* ============================================================
+     AYARLAR
+     ============================================================ */
+
+  function bindSettings() {
+    $$("#themeSeg button").forEach((btn) =>
+      btn.addEventListener("click", () => {
+        applyTheme(btn.dataset.themeVal);
+        Data.saveSettings(state.user.id, { theme: btn.dataset.themeVal });
+        syncSettingsForm();
+        UI.toast(I18N.t("msg.settingSaved"));
+      })
+    );
+
+    $("#setNotifications").addEventListener("change", (e) => {
+      Data.saveSettings(state.user.id, { notifications: e.target.checked });
+      // İzin isteme anını kullanıcının açık eylemine bağlıyoruz
+      if (e.target.checked) UI.notify(I18N.t("app.name"), I18N.t("msg.settingSaved"));
+      UI.toast(I18N.t("msg.settingSaved"));
+    });
+
+    $("#setEmailNotifications").addEventListener("change", (e) => {
+      Data.saveSettings(state.user.id, { emailNotifications: e.target.checked });
+      UI.toast(I18N.t("msg.settingSaved"));
+    });
+
+    $("#setLanguage").addEventListener("change", (e) => {
+      applyLanguage(e.target.value);
+      Data.saveSettings(state.user.id, { language: e.target.value });
+      renderAll();
+      goPage(state.page);
+      UI.toast(I18N.t("msg.settingSaved"));
+    });
+
+    $("#setDefaultView").addEventListener("change", (e) => {
+      Data.saveSettings(state.user.id, { defaultView: e.target.value });
+      UI.toast(I18N.t("msg.settingSaved"));
+    });
+
+    $("#resetDataBtn").addEventListener("click", async () => {
+      const onay = await UI.confirm({
+        title: I18N.t("set.resetConfirm"),
+        body: I18N.t("set.resetBody"),
+        confirmText: I18N.t("common.delete")
+      });
+      if (!onay) return;
+
+      Data.resetData(state.user.id);
+      renderAll();
+      UI.toast(I18N.t("msg.dataReset"), "info");
+    });
+  }
+
+  function syncSettingsForm() {
+    if (!state.user) return;
+    const s = Data.getSettings(state.user.id);
+
+    $("#setNotifications").checked = s.notifications;
+    $("#setEmailNotifications").checked = s.emailNotifications;
+    $("#setLanguage").value = s.language;
+    $("#setDefaultView").value = s.defaultView;
+
+    const tema = document.documentElement.dataset.theme;
+    $$("#themeSeg button").forEach((b) =>
+      b.classList.toggle("is-active", b.dataset.themeVal === tema)
+    );
+  }
+
+  function applyTheme(tema) {
+    document.documentElement.dataset.theme = tema;
+    Store.write("lastTheme", tema);
+    updateThemeButton();
+  }
+
+  function updateThemeButton() {
+    const koyu = document.documentElement.dataset.theme === "dark";
+    $("#themeBtn").textContent = koyu ? "☀" : "☾";
+  }
+
+  function applyLanguage(dil) {
+    I18N.setLang(dil);
+    Store.write("lastLanguage", dil);
+    I18N.applyTranslations();
+    UI.bindPasswordToggles();
+  }
+
+  /* ============================================================
+     KLAVYE
+     ============================================================ */
+
+  function bindGlobalKeys() {
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") UI.closeAllModals();
+
+      // Ctrl/Cmd + K: aramaya odaklan
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+        if ($("#app").hidden) return;
+        e.preventDefault();
+        $("#globalSearch").focus();
+      }
+
+      // "n": yeni görev (bir alana yazarken değil)
+      if (e.key.toLowerCase() === "n" && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        const yaziyor = /input|textarea|select/i.test(e.target.tagName);
+        if (yaziyor || $("#app").hidden) return;
+        if (document.querySelector(".modal.is-open")) return;
+        e.preventDefault();
+        openTaskModal(null);
+      }
+    });
+
+    // Modallardaki kapat düğmeleri ve arka plan
+    $$("[data-close]").forEach((el) =>
+      el.addEventListener("click", () => {
+        const modal = el.closest(".modal");
+        if (modal) UI.closeModal(modal.id);
+      })
+    );
+  }
+
+  document.addEventListener("DOMContentLoaded", init);
+})();

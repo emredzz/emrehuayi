@@ -1,11 +1,610 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="tr" data-theme="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Merhaba Dünya</title>
+  <title>Mini Todo</title>
+  <meta name="description" content="Tamamen tarayıcıda çalışan, localStorage tabanlı görev yöneticisi.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✓</text></svg>">
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <h1>Merhaba Dünya</h1>
+
+<!-- ============================================================
+     1. GİRİŞ EKRANI
+     ============================================================ -->
+<div id="authScreen" class="auth">
+
+  <aside class="auth__hero">
+    <div class="auth__heroInner">
+      <div class="brand brand--lg">
+        <span class="brand__mark">✓</span>
+        <span class="brand__name" data-i18n="app.name">Mini Todo</span>
+      </div>
+      <p class="auth__tagline" data-i18n="app.tagline">Görevlerini topla, gününü planla.</p>
+
+      <!-- Dekoratif görsel: aria-hidden, ekran okuyucuya bir şey söylemiyor -->
+      <svg class="auth__art" viewBox="0 0 320 260" aria-hidden="true">
+        <defs>
+          <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#ffffff" stop-opacity=".95"/>
+            <stop offset="100%" stop-color="#ffffff" stop-opacity=".55"/>
+          </linearGradient>
+        </defs>
+        <rect x="42" y="34" width="196" height="196" rx="18" fill="url(#g1)"/>
+        <rect x="68" y="72" width="128" height="12" rx="6" fill="#6366f1" opacity=".35"/>
+        <rect x="68" y="104" width="96" height="12" rx="6" fill="#6366f1" opacity=".25"/>
+        <rect x="68" y="136" width="112" height="12" rx="6" fill="#6366f1" opacity=".25"/>
+        <rect x="68" y="168" width="72" height="12" rx="6" fill="#6366f1" opacity=".18"/>
+        <circle cx="236" cy="78" r="30" fill="#34d399"/>
+        <path d="M223 78l9 9 18-19" stroke="#fff" stroke-width="7" fill="none"
+              stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="70" cy="222" r="16" fill="#fbbf24"/>
+        <circle cx="272" cy="196" r="11" fill="#f472b6"/>
+      </svg>
+    </div>
+  </aside>
+
+  <main class="auth__panel">
+    <div class="auth__card">
+
+      <div class="brand brand--sm auth__mobileBrand">
+        <span class="brand__mark">✓</span>
+        <span class="brand__name">Mini Todo</span>
+      </div>
+
+      <div class="tabs" role="tablist">
+        <button class="tab is-active" id="tabSignin" role="tab" aria-selected="true"
+                data-i18n="auth.signin">Giriş Yap</button>
+        <button class="tab" id="tabSignup" role="tab" aria-selected="false"
+                data-i18n="auth.signup">Kayıt Ol</button>
+      </div>
+
+      <!-- ---------- Giriş formu ---------- -->
+      <form id="signinForm" class="authForm" novalidate>
+        <h1 class="authForm__title" data-i18n="auth.welcome">Tekrar hoş geldin</h1>
+        <p class="authForm__sub" data-i18n="auth.welcomeSub">Devam etmek için giriş yap.</p>
+
+        <label class="field">
+          <span class="field__label" data-i18n="auth.email">E-posta</span>
+          <input type="email" name="email" autocomplete="email" placeholder="ornek@mail.com">
+          <small class="field__error" data-error-for="email"></small>
+        </label>
+
+        <label class="field">
+          <span class="field__label" data-i18n="auth.password">Şifre</span>
+          <span class="field__wrap">
+            <input type="password" name="password" autocomplete="current-password" placeholder="••••••••">
+            <button type="button" class="pass-toggle" data-i18n-title="auth.showPass"
+                    aria-label="Şifreyi göster"></button>
+          </span>
+          <small class="field__error" data-error-for="password"></small>
+        </label>
+
+        <div class="authForm__row">
+          <label class="check">
+            <input type="checkbox" name="remember" checked>
+            <span data-i18n="auth.remember">Beni hatırla</span>
+          </label>
+          <button type="button" class="link" id="forgotLink" data-i18n="auth.forgot">Şifremi unuttum</button>
+        </div>
+
+        <button type="submit" class="btn btn--primary btn--block" data-i18n="auth.signinBtn">Giriş yap</button>
+
+        <p class="authForm__foot">
+          <span data-i18n="auth.noAccount">Hesabın yok mu?</span>
+          <button type="button" class="link" data-goto="signup" data-i18n="auth.signup">Kayıt Ol</button>
+        </p>
+      </form>
+
+      <!-- ---------- Kayıt formu ---------- -->
+      <form id="signupForm" class="authForm" novalidate hidden>
+        <h1 class="authForm__title" data-i18n="auth.createTitle">Hesap oluştur</h1>
+        <p class="authForm__sub" data-i18n="auth.createSub">Birkaç saniye sürer.</p>
+
+        <label class="field">
+          <span class="field__label" data-i18n="auth.fullName">Ad Soyad</span>
+          <input type="text" name="fullName" autocomplete="name" placeholder="Emre Deniz">
+          <small class="field__error" data-error-for="fullName"></small>
+        </label>
+
+        <label class="field">
+          <span class="field__label" data-i18n="auth.username">Kullanıcı adı</span>
+          <input type="text" name="username" autocomplete="username" placeholder="emredeniz">
+          <small class="field__error" data-error-for="username"></small>
+        </label>
+
+        <label class="field">
+          <span class="field__label" data-i18n="auth.email">E-posta</span>
+          <input type="email" name="email" autocomplete="email" placeholder="ornek@mail.com">
+          <small class="field__error" data-error-for="email"></small>
+        </label>
+
+        <div class="grid2">
+          <label class="field">
+            <span class="field__label" data-i18n="auth.password">Şifre</span>
+            <span class="field__wrap">
+              <input type="password" name="password" autocomplete="new-password" placeholder="••••••••">
+              <button type="button" class="pass-toggle" data-i18n-title="auth.showPass"
+                      aria-label="Şifreyi göster"></button>
+            </span>
+            <small class="field__error" data-error-for="password"></small>
+          </label>
+
+          <label class="field">
+            <span class="field__label" data-i18n="auth.passwordAgain">Şifre tekrar</span>
+            <span class="field__wrap">
+              <input type="password" name="passwordAgain" autocomplete="new-password" placeholder="••••••••">
+              <button type="button" class="pass-toggle" data-i18n-title="auth.showPass"
+                      aria-label="Şifreyi göster"></button>
+            </span>
+            <small class="field__error" data-error-for="passwordAgain"></small>
+          </label>
+        </div>
+
+        <button type="submit" class="btn btn--primary btn--block" data-i18n="auth.signupBtn">Hesap oluştur</button>
+
+        <p class="authForm__foot">
+          <span data-i18n="auth.hasAccount">Zaten hesabın var mı?</span>
+          <button type="button" class="link" data-goto="signin" data-i18n="auth.signin">Giriş Yap</button>
+        </p>
+      </form>
+
+    </div>
+  </main>
+</div>
+
+
+<!-- ============================================================
+     2. UYGULAMA
+     ============================================================ -->
+<div id="app" class="app" hidden>
+
+  <!-- Mobilde kenar çubuğu açıkken arkayı karartan katman -->
+  <div class="sidebar__backdrop" id="sidebarBackdrop"></div>
+
+  <aside class="sidebar" id="sidebar">
+    <div class="brand brand--sm sidebar__brand">
+      <span class="brand__mark">✓</span>
+      <span class="brand__name">Mini Todo</span>
+    </div>
+
+    <nav class="nav">
+      <button class="nav__item is-active" data-page="dashboard">
+        <span class="nav__icon">◈</span><span data-i18n="nav.dashboard">Panel</span>
+      </button>
+      <button class="nav__item" data-page="tasks">
+        <span class="nav__icon">☰</span><span data-i18n="nav.tasks">Görevler</span>
+        <span class="nav__badge" id="navPendingCount">0</span>
+      </button>
+      <button class="nav__item" data-page="categories">
+        <span class="nav__icon">◳</span><span data-i18n="nav.categories">Kategoriler</span>
+      </button>
+      <button class="nav__item" data-page="profile">
+        <span class="nav__icon">◉</span><span data-i18n="nav.profile">Profil</span>
+      </button>
+    </nav>
+
+    <div class="sidebar__foot">
+      <div class="miniUser" id="miniUser">
+        <span class="avatar avatar--sm" id="miniAvatar">?</span>
+        <span class="miniUser__text">
+          <strong id="miniName">—</strong>
+          <small id="miniMail">—</small>
+        </span>
+      </div>
+      <button class="btn btn--ghost btn--block" id="logoutBtn" data-i18n="set.logout">Çıkış Yap</button>
+    </div>
+  </aside>
+
+  <div class="main">
+
+    <header class="topbar">
+      <button class="iconBtn topbar__menu" id="menuBtn" aria-label="Menü">☰</button>
+      <h1 class="topbar__title" id="pageTitle" data-i18n="nav.dashboard">Panel</h1>
+
+      <div class="search">
+        <span class="search__icon">⌕</span>
+        <input type="search" id="globalSearch" data-i18n-ph="tasks.search" placeholder="Görevlerde ara...">
+      </div>
+
+      <button class="iconBtn" id="themeBtn" data-i18n-title="set.theme" title="Görünüm">☾</button>
+      <button class="btn btn--primary topbar__add" id="addTaskBtn">
+        <span>+</span><span data-i18n="tasks.add">Görev Ekle</span>
+      </button>
+    </header>
+
+    <!-- ---------- Panel ---------- -->
+    <section class="page" id="page-dashboard">
+      <div class="hello">
+        <h2><span data-i18n="dash.greeting">Merhaba</span>, <span id="helloName">—</span></h2>
+        <p id="helloDate">—</p>
+      </div>
+
+      <div class="stats">
+        <button class="stat" data-jump="today">
+          <span class="stat__num" id="statToday">0</span>
+          <span class="stat__label" data-i18n="dash.today">Bugünün görevleri</span>
+        </button>
+        <button class="stat" data-jump="pending">
+          <span class="stat__num" id="statPending">0</span>
+          <span class="stat__label" data-i18n="dash.pending">Bekleyen</span>
+        </button>
+        <button class="stat" data-jump="completed">
+          <span class="stat__num" id="statCompleted">0</span>
+          <span class="stat__label" data-i18n="dash.completed">Tamamlanan</span>
+        </button>
+        <button class="stat stat--warn" data-jump="overdue">
+          <span class="stat__num" id="statOverdue">0</span>
+          <span class="stat__label" data-i18n="dash.overdue">Gecikmiş</span>
+        </button>
+      </div>
+
+      <div class="cols">
+        <div class="card">
+          <div class="card__head">
+            <h3 data-i18n="dash.today">Bugünün görevleri</h3>
+          </div>
+          <div id="todayList" class="taskList"></div>
+        </div>
+
+        <div class="card">
+          <div class="card__head">
+            <h3 data-i18n="dash.recent">Son eklenenler</h3>
+          </div>
+          <div id="recentList" class="taskList"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------- Görevler ---------- -->
+    <section class="page" id="page-tasks" hidden>
+      <div class="filters">
+        <div class="chips" id="statusChips">
+          <button class="chip is-active" data-status="all" data-i18n="tasks.all">Tümü</button>
+          <button class="chip" data-status="today" data-i18n="dash.today">Bugün</button>
+          <button class="chip" data-status="pending" data-i18n="dash.pending">Bekleyen</button>
+          <button class="chip" data-status="completed" data-i18n="dash.completed">Tamamlanan</button>
+          <button class="chip" data-status="overdue" data-i18n="dash.overdue">Gecikmiş</button>
+        </div>
+
+        <div class="filters__selects">
+          <select id="filterCategory" class="select"></select>
+          <select id="filterPriority" class="select">
+            <option value="" data-i18n="tasks.fieldPriority">Öncelik</option>
+            <option value="high" data-i18n="prio.high">Yüksek</option>
+            <option value="medium" data-i18n="prio.medium">Orta</option>
+            <option value="low" data-i18n="prio.low">Düşük</option>
+          </select>
+          <select id="filterSort" class="select">
+            <option value="created" data-i18n="sort.created">Eklenme sırası</option>
+            <option value="due" data-i18n="sort.due">Son tarihe göre</option>
+            <option value="priority" data-i18n="sort.priority">Önceliğe göre</option>
+            <option value="title" data-i18n="sort.title">A-Z</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="taskList" class="taskList taskList--page"></div>
+    </section>
+
+    <!-- ---------- Kategoriler ---------- -->
+    <section class="page" id="page-categories" hidden>
+      <div class="page__head">
+        <h2 data-i18n="cat.title">Kategoriler</h2>
+        <button class="btn btn--primary" id="addCategoryBtn">
+          <span>+</span><span data-i18n="cat.new">Yeni Kategori</span>
+        </button>
+      </div>
+      <div id="categoryGrid" class="catGrid"></div>
+    </section>
+
+    <!-- ---------- Profil ve Ayarlar ---------- -->
+    <section class="page" id="page-profile" hidden>
+      <div class="cols cols--profile">
+
+        <div class="card">
+          <div class="card__head"><h3 data-i18n="profile.title">Profil</h3></div>
+
+          <div class="photoRow">
+            <span class="avatar avatar--lg" id="profileAvatar">?</span>
+            <div class="photoRow__actions">
+              <label class="btn btn--ghost">
+                <span data-i18n="profile.upload">Fotoğraf yükle</span>
+                <input type="file" id="avatarInput" accept="image/*" hidden>
+              </label>
+              <button class="btn btn--ghost" id="removeAvatarBtn" data-i18n="profile.removePhoto">Kaldır</button>
+            </div>
+          </div>
+
+          <form id="profileForm" novalidate>
+            <label class="field">
+              <span class="field__label" data-i18n="profile.fullName">Ad soyad</span>
+              <input type="text" name="fullName" autocomplete="name">
+              <small class="field__error" data-error-for="fullName"></small>
+            </label>
+            <label class="field">
+              <span class="field__label" data-i18n="profile.username">Kullanıcı adı</span>
+              <input type="text" name="username" autocomplete="username">
+              <small class="field__error" data-error-for="username"></small>
+            </label>
+            <label class="field">
+              <span class="field__label" data-i18n="profile.email">E-posta</span>
+              <input type="email" name="email" autocomplete="email">
+              <small class="field__error" data-error-for="email"></small>
+            </label>
+            <button type="submit" class="btn btn--primary" data-i18n="profile.saveProfile">Profili kaydet</button>
+          </form>
+
+          <hr class="sep">
+
+          <h4 class="subhead" data-i18n="profile.changePass">Şifre değiştir</h4>
+          <form id="passwordForm" novalidate>
+            <label class="field">
+              <span class="field__label" data-i18n="profile.currentPass">Mevcut şifre</span>
+              <span class="field__wrap">
+                <input type="password" name="current" autocomplete="current-password">
+                <button type="button" class="pass-toggle" aria-label="Şifreyi göster"></button>
+              </span>
+              <small class="field__error" data-error-for="current"></small>
+            </label>
+            <div class="grid2">
+              <label class="field">
+                <span class="field__label" data-i18n="profile.newPass">Yeni şifre</span>
+                <span class="field__wrap">
+                  <input type="password" name="next" autocomplete="new-password">
+                  <button type="button" class="pass-toggle" aria-label="Şifreyi göster"></button>
+                </span>
+                <small class="field__error" data-error-for="next"></small>
+              </label>
+              <label class="field">
+                <span class="field__label" data-i18n="profile.newPassAgain">Yeni şifre tekrar</span>
+                <span class="field__wrap">
+                  <input type="password" name="nextAgain" autocomplete="new-password">
+                  <button type="button" class="pass-toggle" aria-label="Şifreyi göster"></button>
+                </span>
+                <small class="field__error" data-error-for="nextAgain"></small>
+              </label>
+            </div>
+            <button type="submit" class="btn btn--primary" data-i18n="profile.updatePass">Şifreyi güncelle</button>
+          </form>
+        </div>
+
+        <div class="card">
+          <div class="card__head"><h3 data-i18n="set.title">Ayarlar</h3></div>
+
+          <div class="setting">
+            <div class="setting__text">
+              <strong data-i18n="set.theme">Görünüm</strong>
+            </div>
+            <div class="segmented" id="themeSeg">
+              <button data-theme-val="light" data-i18n="set.light">Açık</button>
+              <button data-theme-val="dark" data-i18n="set.dark">Koyu</button>
+            </div>
+          </div>
+
+          <div class="setting">
+            <div class="setting__text">
+              <strong data-i18n="set.notifications">Bildirimler</strong>
+              <small data-i18n="set.notificationsHint">Görev tamamlandığında bildirim göster</small>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="setNotifications">
+              <span class="switch__track"></span>
+            </label>
+          </div>
+
+          <div class="setting">
+            <div class="setting__text">
+              <strong data-i18n="set.emailNotifications">E-posta bildirimleri</strong>
+              <small data-i18n="set.emailHint">Yerel uygulamada e-posta gönderilmez</small>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="setEmailNotifications">
+              <span class="switch__track"></span>
+            </label>
+          </div>
+
+          <div class="setting">
+            <div class="setting__text">
+              <strong data-i18n="set.language">Dil</strong>
+            </div>
+            <select id="setLanguage" class="select">
+              <option value="tr">Türkçe</option>
+              <option value="en">English</option>
+            </select>
+          </div>
+
+          <div class="setting">
+            <div class="setting__text">
+              <strong data-i18n="set.defaultView">Varsayılan görev görünümü</strong>
+            </div>
+            <select id="setDefaultView" class="select">
+              <option value="all" data-i18n="tasks.all">Tümü</option>
+              <option value="today" data-i18n="dash.today">Bugün</option>
+              <option value="pending" data-i18n="dash.pending">Bekleyen</option>
+              <option value="completed" data-i18n="dash.completed">Tamamlanan</option>
+            </select>
+          </div>
+
+          <hr class="sep">
+
+          <div class="danger">
+            <div class="setting__text">
+              <strong data-i18n="set.dangerTitle">Verileri sıfırla</strong>
+              <small data-i18n="set.dangerHint">Bu hesaba ait tüm görev ve kategoriler silinir.</small>
+            </div>
+            <button class="btn btn--danger" id="resetDataBtn" data-i18n="set.resetData">Verileri sil</button>
+          </div>
+
+          <button class="btn btn--ghost btn--block logoutWide" id="logoutBtn2" data-i18n="set.logout">Çıkış Yap</button>
+        </div>
+
+      </div>
+    </section>
+
+  </div>
+</div>
+
+
+<!-- ============================================================
+     3. MODALLAR
+     ============================================================ -->
+
+<!-- Görev ekle / düzenle -->
+<div class="modal" id="taskModal" aria-hidden="true" role="dialog" aria-modal="true">
+  <div class="modal__backdrop" data-close></div>
+  <div class="modal__box">
+    <div class="modal__head">
+      <h3 id="taskModalTitle" data-i18n="tasks.newTitle">Yeni Görev</h3>
+      <button class="iconBtn" data-close aria-label="Kapat">✕</button>
+    </div>
+    <form id="taskForm" novalidate>
+      <input type="hidden" name="id">
+
+      <label class="field">
+        <span class="field__label" data-i18n="tasks.fieldTitle">Görev başlığı</span>
+        <input type="text" name="title" maxlength="120">
+        <small class="field__error" data-error-for="title"></small>
+      </label>
+
+      <label class="field">
+        <span class="field__label" data-i18n="tasks.fieldDesc">Açıklama</span>
+        <textarea name="description" rows="3" maxlength="500"></textarea>
+      </label>
+
+      <div class="grid2">
+        <label class="field">
+          <span class="field__label" data-i18n="tasks.fieldCategory">Kategori</span>
+          <select name="categoryId" id="taskCategorySelect" class="select"></select>
+        </label>
+        <label class="field">
+          <span class="field__label" data-i18n="tasks.fieldPriority">Öncelik</span>
+          <select name="priority" class="select">
+            <option value="low" data-i18n="prio.low">Düşük</option>
+            <option value="medium" selected data-i18n="prio.medium">Orta</option>
+            <option value="high" data-i18n="prio.high">Yüksek</option>
+          </select>
+        </label>
+      </div>
+
+      <label class="field">
+        <span class="field__label" data-i18n="tasks.fieldDue">Son tarih</span>
+        <input type="date" name="dueDate">
+      </label>
+
+      <div class="modal__foot">
+        <button type="button" class="btn btn--ghost" data-close data-i18n="common.cancel">İptal</button>
+        <button type="submit" class="btn btn--primary" id="taskSubmit" data-i18n="tasks.create">Görevi Oluştur</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Kategori ekle / düzenle -->
+<div class="modal" id="categoryModal" aria-hidden="true" role="dialog" aria-modal="true">
+  <div class="modal__backdrop" data-close></div>
+  <div class="modal__box modal__box--sm">
+    <div class="modal__head">
+      <h3 id="categoryModalTitle" data-i18n="cat.new">Yeni Kategori</h3>
+      <button class="iconBtn" data-close aria-label="Kapat">✕</button>
+    </div>
+    <form id="categoryForm" novalidate>
+      <input type="hidden" name="id">
+
+      <label class="field">
+        <span class="field__label" data-i18n="cat.name">Kategori adı</span>
+        <input type="text" name="name" maxlength="40" placeholder="Development">
+        <small class="field__error" data-error-for="name"></small>
+      </label>
+
+      <div class="field">
+        <span class="field__label" data-i18n="cat.icon">Simge</span>
+        <div class="iconPicker" id="iconPicker"></div>
+        <input type="hidden" name="icon" value="📁">
+      </div>
+
+      <div class="field">
+        <span class="field__label" data-i18n="cat.color">Renk</span>
+        <div class="colorPicker" id="colorPicker"></div>
+        <input type="hidden" name="color" value="#6366f1">
+      </div>
+
+      <div class="modal__foot">
+        <button type="button" class="btn btn--ghost" data-close data-i18n="common.cancel">İptal</button>
+        <button type="submit" class="btn btn--primary" id="categorySubmit" data-i18n="cat.create">Oluştur</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Şifremi unuttum -->
+<div class="modal" id="forgotModal" aria-hidden="true" role="dialog" aria-modal="true">
+  <div class="modal__backdrop" data-close></div>
+  <div class="modal__box modal__box--sm">
+    <div class="modal__head">
+      <h3 data-i18n="auth.resetTitle">Şifre sıfırla</h3>
+      <button class="iconBtn" data-close aria-label="Kapat">✕</button>
+    </div>
+    <form id="forgotForm" novalidate>
+      <p class="muted" data-i18n="auth.resetSub"></p>
+
+      <label class="field">
+        <span class="field__label" data-i18n="auth.email">E-posta</span>
+        <input type="email" name="email" autocomplete="email">
+        <small class="field__error" data-error-for="email"></small>
+      </label>
+
+      <label class="field">
+        <span class="field__label" data-i18n="auth.newPassword">Yeni şifre</span>
+        <span class="field__wrap">
+          <input type="password" name="password" autocomplete="new-password">
+          <button type="button" class="pass-toggle" aria-label="Şifreyi göster"></button>
+        </span>
+        <small class="field__error" data-error-for="password"></small>
+      </label>
+
+      <label class="field">
+        <span class="field__label" data-i18n="auth.passwordAgain">Şifre tekrar</span>
+        <span class="field__wrap">
+          <input type="password" name="passwordAgain" autocomplete="new-password">
+          <button type="button" class="pass-toggle" aria-label="Şifreyi göster"></button>
+        </span>
+        <small class="field__error" data-error-for="passwordAgain"></small>
+      </label>
+
+      <div class="modal__foot">
+        <button type="button" class="btn btn--ghost" data-close data-i18n="common.cancel">İptal</button>
+        <button type="submit" class="btn btn--primary" data-i18n="auth.resetBtn">Şifreyi güncelle</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Onay kutusu -->
+<div class="modal" id="confirmModal" aria-hidden="true" role="dialog" aria-modal="true">
+  <div class="modal__backdrop" data-close></div>
+  <div class="modal__box modal__box--xs">
+    <div class="modal__head">
+      <h3 id="confirmTitle">—</h3>
+    </div>
+    <p class="muted" id="confirmBody">—</p>
+    <div class="modal__foot">
+      <button type="button" class="btn btn--ghost" id="confirmCancel" data-i18n="common.cancel">İptal</button>
+      <button type="button" class="btn btn--danger" id="confirmOk" data-i18n="common.confirm">Onayla</button>
+    </div>
+  </div>
+</div>
+
+<div id="toasts" class="toasts" aria-live="polite"></div>
+
+<!-- Sıra önemli: storage -> utils -> i18n -> data -> auth -> ui -> app -->
+<script src="js/storage.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/data.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/app.js"></script>
 </body>
 </html>
