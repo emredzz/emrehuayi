@@ -97,6 +97,8 @@ js/app.js           Sayfa akışı, render, olay bağlama
 
 Betikler `index.html` içinde bu sırayla yüklenir; her dosya kendinden öncekine dayanır.
 
+Kod yapısının ayrıntısı ve tasarım kararları için [MIMARI.md](MIMARI.md).
+
 ## Veriler nerede duruyor
 
 Tarayıcının `localStorage` alanında, `minitodo:` önekiyle:
