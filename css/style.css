@@ -565,32 +565,66 @@ button { font: inherit; color: inherit; }
   color: var(--text-2);
 }
 
-/* Demo hesap kutusu */
+/* Demo hesap kutusu — koyu yazı ve vurgulu çerçeve yerine
+   yumuşak bir zemin, küçük bir simge ve soluk bir etiket. */
 .demoBox {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 12px;
-  margin-top: 18px;
-  padding: 13px 15px;
+  margin-top: 20px;
+  padding: 12px 13px;
   border: 1px solid var(--border);
-  border-radius: var(--r-sm);
+  border-radius: var(--r);
   background: var(--primary-tint);
 }
 
-.demoBox__text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-.demoBox__text strong { font-size: 12.5px; font-weight: 500; color: var(--text-2); }
+.demoBox__icon {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--primary);
+}
 
-.demoBox__text code {
+.demoBox__icon .icon { width: 16px; height: 16px; }
+
+.demoBox__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  margin-right: auto;
+}
+
+/* Etiket, ayarlardaki bölüm başlıklarıyla aynı dilde */
+.demoBox__label {
+  font-size: 10.5px;
+  font-weight: 400;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.demoBox__cred {
   font-family: "Consolas", "SFMono-Regular", ui-monospace, monospace;
   font-size: 12.5px;
-  color: var(--text);
+  letter-spacing: .01em;
+  color: var(--text-2);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.demoBox .btn { padding: 8px 14px; font-size: 13px; background: var(--surface); }
+.demoBox__btn {
+  padding: 7px 13px;
+  font-size: 12.5px;
+  font-weight: 400;
+  background: var(--surface);
+}
 
 /* ---------- 8. Uygulama kabuğu ---------- */
 
